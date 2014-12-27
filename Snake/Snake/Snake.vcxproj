@@ -20,7 +20,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -52,6 +52,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -76,11 +77,28 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="glew.h" />
+    <ClInclude Include="glut-3.7.6-bin\glut.h" />
+    <ClInclude Include="il.h" />
+    <ClInclude Include="shaderLoader.h" />
     <ClInclude Include="snake.h" />
+    <ClInclude Include="textureLoader.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="shaderLoader.cpp" />
     <ClCompile Include="snake.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="textureLoader.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="DevIL.lib" />
+    <Library Include="glew32.lib" />
+    <Library Include="glut-3.7.6-bin\glut32.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="DevIL.dll" />
+    <None Include="glut-3.7.6-bin\glut.def" />
+    <None Include="glut-3.7.6-bin\glut32.dll" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

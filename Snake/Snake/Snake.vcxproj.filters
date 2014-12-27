@@ -18,6 +18,21 @@
     <ClInclude Include="snake.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="shaderLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="glew.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="glut-3.7.6-bin\glut.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="textureLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="il.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="snake.cpp">
@@ -26,5 +41,23 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="shaderLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="textureLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="glew32.lib" />
+    <Library Include="glut-3.7.6-bin\glut32.lib" />
+    <Library Include="DevIL.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="glut-3.7.6-bin\glut.def">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="glut-3.7.6-bin\glut32.dll" />
+    <None Include="DevIL.dll" />
   </ItemGroup>
 </Project>
