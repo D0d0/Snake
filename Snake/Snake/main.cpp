@@ -6,8 +6,11 @@
 using namespace std;
 
 GLuint tex_skybox;
-GLuint shaders_skybox;
+GLuint shaders_skybox, shaders_envmap;
 GLdouble vzd, old_vzd, fi, xi, old_fi, old_xi;
+GLint left_mouse_down_x, left_mouse_down_y;
+GLint right_mouse_down_y;
+GLboolean right_down = false, left_down = false;
 
 void reshape(int w, int h){
 
@@ -17,8 +20,9 @@ void reshape(int w, int h){
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	if (h == 0)
+	if (h == 0){
 		h = 1;
+	}
 	// Chceme perspektivnu projekciu
 	float ratio = (float)w / (float)h;
 	gluPerspective(60, ratio, 0.1, 1000.0);
@@ -42,6 +46,9 @@ void render(){
 	gluLookAt(camera_pos[0], camera_pos[1], camera_pos[2], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 	float view_matrix[16];
 	glGetFloatv(GL_MODELVIEW_MATRIX, view_matrix);
+
+	shaderLoader* sl = new shaderLoader();
+	sl->SetShaderUniformMatrix4f(shaders_envmap, "view_matrix", view_matrix);
 
 	// vykresli suradnicove osi svetoveho systemu roznymi farbami
 	glLineWidth(1);
@@ -102,6 +109,51 @@ bool init(void)
 	return true;
 }
 
+// Procedura obsluhujuca stlacenie tlacitka mysi
+void mouse_klik(int button, int state, int x, int y){
+	switch (button){
+	case GLUT_LEFT_BUTTON:
+		if (state == GLUT_DOWN){
+			left_down = true;
+			left_mouse_down_x = x;
+			left_mouse_down_y = y;
+			old_fi = fi;
+			old_xi = xi;
+		}
+		else if (state == GLUT_UP){
+			left_down = false;
+		}
+		break;
+	case GLUT_RIGHT_BUTTON:
+		if (state == GLUT_DOWN){
+			right_down = true;
+			right_mouse_down_y = y;
+			old_vzd = vzd;
+		}
+		else if (state == GLUT_UP){
+			right_down = false;
+		}
+		break;
+	default:
+		break;
+	}
+
+	glutPostRedisplay();
+}
+void mouse_move(int x, int y){
+	if (left_down == true){
+		fi = old_fi + (left_mouse_down_x - x) / 200.0f;
+		xi = old_xi + (y - left_mouse_down_y) / 200.0f;
+		glutPostRedisplay();
+	}
+
+	if (right_down == true){
+		vzd = old_vzd + (right_mouse_down_y - y) / 10.0f;
+		glutPostRedisplay();
+	}
+
+}
+
 int main(int argc, char** argv){
 	// GLUT Inicializacia
 	glutInit(&argc, argv);
@@ -117,6 +169,8 @@ int main(int argc, char** argv){
 	// Zinicializujeme GLEW
 	glewInit();
 	init();
+	glutMouseFunc(mouse_klik);
+	glutMotionFunc(mouse_move);
 	// Nastavime zakladne vlastnosti OpenGL
 	/*init();
 	initSphereVBO(32, 32);
@@ -142,6 +196,9 @@ int main(int argc, char** argv){
 	shaders_skybox = sl->loadProgram("shaders/skybox.vert", "shaders/skybox.frag");
 	sl->SetShaderUniform1i(shaders_skybox, "cube_map", 0);
 
+	shaders_envmap = sl->loadProgram("shaders/perpixel_envmap.vert", "shaders/perpixel_envmap.frag");
+	sl->SetShaderUniform1i(shaders_envmap, "color_texture", 0);
+	sl->SetShaderUniform1i(shaders_envmap, "cubemap_texture", 1);
 	glutDisplayFunc(render);
 	glutReshapeFunc(reshape);
 	// Spustenie hlavneho okruhu zachytavania sprav
