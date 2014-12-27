@@ -62,7 +62,6 @@ GLuint shaderLoader::loadShader(GLenum shaderType, const char *fileName)
 // nacitanie sahderov a ich ulozenie do OpenGL
 // navratova hodnota je OpenGL id shader programu
 GLuint shaderLoader::loadProgram(const char *fileVertexShader, const char *fileFragmentShader){
-	printf("Tuto");
 	// nacitanie a kompilacia shaderov
 	GLuint vertexShader = loadShader(GL_VERTEX_SHADER, fileVertexShader);
 	if (vertexShader == 0)

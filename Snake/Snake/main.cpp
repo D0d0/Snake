@@ -140,6 +140,7 @@ void mouse_klik(int button, int state, int x, int y){
 
 	glutPostRedisplay();
 }
+
 void mouse_move(int x, int y){
 	if (left_down == true){
 		fi = old_fi + (left_mouse_down_x - x) / 200.0f;
@@ -203,6 +204,5 @@ int main(int argc, char** argv){
 	glutReshapeFunc(reshape);
 	// Spustenie hlavneho okruhu zachytavania sprav
 	glutMainLoop();
-	system("pause");
 	return 0;
 }
