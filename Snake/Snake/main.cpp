@@ -1,6 +1,7 @@
 #include <iostream>
 #include "shaderLoader.h"
 #include "textureLoader.h"
+#include "worldObject.h"
 #include "glew.h"
 #include "glut-3.7.6-bin/glut.h"
 using namespace std;
@@ -202,6 +203,8 @@ int main(int argc, char** argv){
 	sl->SetShaderUniform1i(shaders_envmap, "cubemap_texture", 1);
 	glutDisplayFunc(render);
 	glutReshapeFunc(reshape);
+	worldObject* obj = new worldObject();
+	obj->loadFromFile("ahoj");
 	// Spustenie hlavneho okruhu zachytavania sprav
 	glutMainLoop();
 	return 0;
