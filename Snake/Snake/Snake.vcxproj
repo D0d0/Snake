@@ -53,6 +53,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>C:\Users\Jozef\Source\Repos\Snake\Snake\Snake\freetype</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -77,6 +78,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="fonts.h" />
     <ClInclude Include="glew.h" />
     <ClInclude Include="glut-3.7.6-bin\glut.h" />
     <ClInclude Include="il.h" />
@@ -88,6 +90,7 @@
     <ClInclude Include="textureLoader.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="fonts.cpp" />
     <ClCompile Include="skybox.cpp" />
     <ClCompile Include="world.cpp" />
     <ClCompile Include="worldObject.cpp" />
@@ -98,13 +101,16 @@
   </ItemGroup>
   <ItemGroup>
     <Library Include="DevIL.lib" />
+    <Library Include="freetype.lib" />
     <Library Include="glew32.lib" />
     <Library Include="glut-3.7.6-bin\glut32.lib" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DevIL.dll" />
+    <None Include="freetype6.dll" />
     <None Include="glut-3.7.6-bin\glut.def" />
     <None Include="glut-3.7.6-bin\glut32.dll" />
+    <None Include="zlib1.dll" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

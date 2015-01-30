@@ -7,6 +7,8 @@
 #include "world.h"
 #include "glew.h"
 #include "glut-3.7.6-bin/glut.h"
+#include "fonts.h"
+//#include "fonts.h"
 #include <math.h>
 using namespace std;
 
@@ -15,16 +17,25 @@ GLdouble vzd, old_vzd, fi, xi, old_fi, old_xi;
 GLint left_mouse_down_x, left_mouse_down_y;
 GLint right_mouse_down_y;
 GLboolean right_down = false, left_down = false;
-
+GLfloat posunX = 0.0f;
+GLfloat posunY = 0.0f;
+GLfloat posunZ = 0.0f;
+GLboolean up = true;
+GLboolean down = false;
+GLboolean righ = false;
+GLboolean lef = false;
 skybox* sky;
 world* wor;
 
+
+GLfloat size = 1.0f;
 // id VBO
 GLuint g_uiVBOSphereCoords, g_uiVBOSphereTexCoords, g_uiVBOSphereNormals, g_uiVBOSphereIndices;
 GLuint g_uiSphereNumIndices;
 
-void renderSphereVBO()
-{
+void renderSphereVBO(){
+	glScalef(0.1, 0.1, 0.1);
+	glTranslatef(0, 0, 0);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glBindBuffer(GL_ARRAY_BUFFER, g_uiVBOSphereCoords);
 	glVertexPointer(3, GL_FLOAT, 0, NULL);
@@ -67,20 +78,6 @@ void reshape(int w, int h){
 }
 
 
-void render3DTextGLUT(float x, float y, float z, float scale, void *font, const char *string)
-{
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glTranslatef(x, y, z);
-	glRotatef(-90, 1.f, 0.0f, 0.0f);
-	glScalef(-scale, -scale, scale);
-	for (const char* c = string; *c != '\0'; c++)
-	{
-		glutStrokeCharacter(font, *c);
-	}
-	glPopMatrix();
-}
-
 void render(){
 	// Vymaz (vypln) obrazovku a z-buffer definovanymi hodnotami
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -95,9 +92,9 @@ void render(){
 	camera_pos[1] = vzd*sin(fi)*cos(xi);
 	camera_pos[2] = vzd*sin(xi);
 	camera_pos[3] = 1;
-//	if (camera_pos[1] < 0.3f){
-//		camera_pos[1] = 0.3f;
-//	}
+	//	if (camera_pos[1] < 0.3f){
+	//		camera_pos[1] = 0.3f;
+	//	}
 	gluLookAt(camera_pos[0], camera_pos[1], camera_pos[2], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 	float view_matrix[16];
 	glGetFloatv(GL_MODELVIEW_MATRIX, view_matrix);
@@ -119,7 +116,17 @@ void render(){
 	//vykresli kocku
 	wor->render();
 
+	render2DTextFT(10, 45, "F1 - zapni/vypni animaciu");
 	render3DTextGLUT(6, 0, 2, 0.01, GLUT_STROKE_ROMAN, "Projekt OpenGL - GLUT 3D text");
+
+	glTranslatef(0, posunY, posunZ);
+	GLUquadricObj *quadratic;
+	quadratic = gluNewQuadric();
+	glTranslatef(2.1, 0, 0);
+	glRotatef(0, 0.0f, 1.0f, 0.0f);
+	gluCylinder(quadratic, 0.1f, 0.1f, size, 32, 32);
+
+	renderSphereVBO();
 	glutSwapBuffers();
 }
 
@@ -222,12 +229,11 @@ bool init(void)
 
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-
 	// parametre hmly
-	glFogi(GL_FOG_MODE, GL_LINEAR);
+	glFogi(GL_FOG_MODE, GL_EXP2);
 	GLfloat fogColor[4] = { 0.5f, 0.5f, 0.5f, 1.0f };
 	glFogfv(GL_FOG_COLOR, fogColor);
-	glFogf(GL_FOG_DENSITY, 0.35f);
+	glFogf(GL_FOG_DENSITY, 0.1f);
 	glHint(GL_FOG_HINT, GL_DONT_CARE);
 	glFogf(GL_FOG_START, 3.0f);
 	glFogf(GL_FOG_END, 20.0f);
@@ -288,10 +294,66 @@ void mouse_move(int x, int y){
 }
 
 void timer(int a){
-	fi += 0.001f;
+	if (righ){
+		posunY += 0.005f;
+	}
+	if (lef){
+		posunY -= 0.005f;
+	}
+	if (up){
+		posunZ += 0.005f;
+	}
+	if (down){
+		posunZ -= 0.005f;
+	}
+	//size += 0.01f;
 	glutPostRedisplay();
 	glutTimerFunc(10, timer, a);
 }
+
+void keyboard(unsigned char key, int x, int y){
+	switch (key){
+	case 27:
+		exit(0);
+		break;
+	default:
+		break;
+	}
+}
+
+void special_keys(int a_keys, int x, int y){
+	switch (a_keys){
+	case GLUT_KEY_DOWN:
+		up = false;
+		righ = false;
+		down = true;
+		lef = false;
+		glutPostRedisplay();
+		break;
+	case GLUT_KEY_UP:
+		up = true;
+		righ = false;
+		down = false;
+		lef = false;
+		glutPostRedisplay();
+		break;
+	case GLUT_KEY_LEFT:
+		up = false;
+		righ = false;
+		down = false;
+		lef = true;
+		break;
+	case GLUT_KEY_RIGHT:
+		up = false;
+		righ = true;
+		down = false;
+		lef = false;
+		break;
+	default:
+		break;
+	}
+}
+
 
 int main(int argc, char** argv){
 	// GLUT Inicializacia
@@ -308,7 +370,7 @@ int main(int argc, char** argv){
 	// Zinicializujeme GLEW
 	glewInit();
 	init();
-	//initSphereVBO(320, 320);
+	initSphereVBO(500, 500);
 	glutMouseFunc(mouse_klik);
 	glutMotionFunc(mouse_move);
 	// Nastavime zakladne vlastnosti OpenGL
@@ -320,12 +382,13 @@ int main(int argc, char** argv){
 	// Zaregistrujeme callback funkcie
 	glutDisplayFunc(render);
 	glutReshapeFunc(reshape);
-	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(special_keys);
 	glutMouseFunc(mouse_klik);
 	glutMotionFunc(mouse_move);
 	glutTimerFunc(0, timer, 0);
 	*/
+	glutKeyboardFunc(keyboard);
+	glutSpecialFunc(special_keys);
 	glutTimerFunc(10, timer, 0);
 	sky = new skybox();
 	wor = new world();

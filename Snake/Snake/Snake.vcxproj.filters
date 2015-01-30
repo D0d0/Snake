@@ -42,6 +42,9 @@
     <ClInclude Include="world.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="fonts.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="snake.cpp">
@@ -65,11 +68,15 @@
     <ClCompile Include="world.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="fonts.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Library Include="glew32.lib" />
     <Library Include="glut-3.7.6-bin\glut32.lib" />
     <Library Include="DevIL.lib" />
+    <Library Include="freetype.lib" />
   </ItemGroup>
   <ItemGroup>
     <None Include="glut-3.7.6-bin\glut.def">
@@ -77,5 +84,7 @@
     </None>
     <None Include="glut-3.7.6-bin\glut32.dll" />
     <None Include="DevIL.dll" />
+    <None Include="freetype6.dll" />
+    <None Include="zlib1.dll" />
   </ItemGroup>
 </Project>
