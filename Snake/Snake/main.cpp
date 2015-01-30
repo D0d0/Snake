@@ -1,17 +1,54 @@
+#define _USE_MATH_DEFINES
 #include <iostream>
 #include "shaderLoader.h"
 #include "textureLoader.h"
 #include "worldObject.h"
+#include "skybox.h"
+#include "world.h"
 #include "glew.h"
 #include "glut-3.7.6-bin/glut.h"
+#include <math.h>
 using namespace std;
 
-GLuint tex_skybox;
-GLuint shaders_skybox, shaders_envmap;
+GLuint  shaders_envmap;
 GLdouble vzd, old_vzd, fi, xi, old_fi, old_xi;
 GLint left_mouse_down_x, left_mouse_down_y;
 GLint right_mouse_down_y;
 GLboolean right_down = false, left_down = false;
+
+skybox* sky;
+world* wor;
+
+// id VBO
+GLuint g_uiVBOSphereCoords, g_uiVBOSphereTexCoords, g_uiVBOSphereNormals, g_uiVBOSphereIndices;
+GLuint g_uiSphereNumIndices;
+
+void renderSphereVBO()
+{
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glBindBuffer(GL_ARRAY_BUFFER, g_uiVBOSphereCoords);
+	glVertexPointer(3, GL_FLOAT, 0, NULL);
+
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glBindBuffer(GL_ARRAY_BUFFER, g_uiVBOSphereTexCoords);
+	glTexCoordPointer(2, GL_FLOAT, 0, NULL);
+
+	glEnableClientState(GL_NORMAL_ARRAY);
+	glBindBuffer(GL_ARRAY_BUFFER, g_uiVBOSphereNormals);
+	glNormalPointer(GL_FLOAT, 0, NULL);
+
+	// draw a cube using buffer with indices
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_uiVBOSphereIndices);
+	glDrawElements(GL_QUADS, g_uiSphereNumIndices, GL_UNSIGNED_INT, NULL);
+
+	// deactivate vertex arrays after drawing
+	glDisableClientState(GL_NORMAL_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
 
 void reshape(int w, int h){
 
@@ -27,7 +64,21 @@ void reshape(int w, int h){
 	// Chceme perspektivnu projekciu
 	float ratio = (float)w / (float)h;
 	gluPerspective(60, ratio, 0.1, 1000.0);
-	//glOrtho(-10.0f*ratio, 10.0f*ratio, -10.0f, 10.0f, 1.0, 5000.0); 
+}
+
+
+void render3DTextGLUT(float x, float y, float z, float scale, void *font, const char *string)
+{
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glTranslatef(x, y, z);
+	glRotatef(-90, 1.f, 0.0f, 0.0f);
+	glScalef(-scale, -scale, scale);
+	for (const char* c = string; *c != '\0'; c++)
+	{
+		glutStrokeCharacter(font, *c);
+	}
+	glPopMatrix();
 }
 
 void render(){
@@ -44,6 +95,9 @@ void render(){
 	camera_pos[1] = vzd*sin(fi)*cos(xi);
 	camera_pos[2] = vzd*sin(xi);
 	camera_pos[3] = 1;
+//	if (camera_pos[1] < 0.3f){
+//		camera_pos[1] = 0.3f;
+//	}
 	gluLookAt(camera_pos[0], camera_pos[1], camera_pos[2], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 	float view_matrix[16];
 	glGetFloatv(GL_MODELVIEW_MATRIX, view_matrix);
@@ -61,16 +115,77 @@ void render(){
 
 	// vykresli skybox
 	// skybox je dany vo svetovych suradniciach, akurat jeho stred je stale v bode, kdeje kamera
-	glUseProgram(shaders_skybox);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, tex_skybox);
-	glPushMatrix();
-	glScalef(500, 500, 500);
-	//renderCubeVBO();
-	glPopMatrix();
-	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-	glUseProgram(0);
+	sky->render();
+	//vykresli kocku
+	wor->render();
+
+	render3DTextGLUT(6, 0, 2, 0.01, GLUT_STROKE_ROMAN, "Projekt OpenGL - GLUT 3D text");
 	glutSwapBuffers();
+}
+
+void initSphereVBO(int xSlices, int ySlices)
+{
+	float* vertices = new float[3 * (xSlices + 1) * (ySlices + 1)];
+	float* normals = new float[3 * (xSlices + 1) * (ySlices + 1)];
+	float* texcoords = new float[2 * (xSlices + 1) * (ySlices + 1)];
+
+	for (int i = 0; i <= xSlices; i++)
+	{
+		float u = i / float(xSlices);
+		for (int j = 0; j <= ySlices; j++)
+		{
+			float v = j / float(ySlices);
+
+			int index = i + j * (xSlices + 1);
+
+			vertices[3 * index + 0] = cos(2 * u * M_PI) * cos((v - 0.5f) * M_PI);
+			vertices[3 * index + 1] = sin(2 * u * M_PI) * cos((v - 0.5f) * M_PI);
+			vertices[3 * index + 2] = sin((v - 0.5f) * M_PI);
+
+			normals[3 * index + 0] = vertices[3 * index + 0];
+			normals[3 * index + 1] = vertices[3 * index + 1];
+			normals[3 * index + 2] = vertices[3 * index + 2];
+
+			texcoords[2 * index + 0] = u;
+			texcoords[2 * index + 1] = 1.0f - v;
+		}
+	}
+
+	GLuint* indices = new GLuint[4 * xSlices * ySlices];
+	int index = 0;
+	for (int i = 0; i < xSlices; i++)
+	{
+		for (int j = 0; j < ySlices; j++)
+		{
+			indices[index++] = i + j * (xSlices + 1);
+			indices[index++] = (i + 1) + j * (xSlices + 1);
+			indices[index++] = (i + 1) + (j + 1) * (xSlices + 1);
+			indices[index++] = i + (j + 1) * (xSlices + 1);
+		}
+	}
+
+	glGenBuffers(1, &g_uiVBOSphereCoords);
+	glBindBuffer(GL_ARRAY_BUFFER, g_uiVBOSphereCoords);
+	glBufferData(GL_ARRAY_BUFFER, 3 * (xSlices + 1) * (ySlices + 1) * sizeof(float), vertices, GL_STATIC_DRAW);
+
+	glGenBuffers(1, &g_uiVBOSphereNormals);
+	glBindBuffer(GL_ARRAY_BUFFER, g_uiVBOSphereNormals);
+	glBufferData(GL_ARRAY_BUFFER, 3 * (xSlices + 1) * (ySlices + 1) * sizeof(float), normals, GL_STATIC_DRAW);
+
+	glGenBuffers(1, &g_uiVBOSphereTexCoords);
+	glBindBuffer(GL_ARRAY_BUFFER, g_uiVBOSphereTexCoords);
+	glBufferData(GL_ARRAY_BUFFER, 2 * (xSlices + 1) * (ySlices + 1) * sizeof(float), texcoords, GL_STATIC_DRAW);
+
+	glGenBuffers(1, &g_uiVBOSphereIndices);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_uiVBOSphereIndices);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * (xSlices + 0) * (ySlices + 0) * sizeof(GLuint), indices, GL_STATIC_DRAW);
+
+	g_uiSphereNumIndices = 4 * (xSlices + 0) * (ySlices + 0);
+
+	delete[] vertices;
+	delete[] normals;
+	delete[] texcoords;
+	delete[] indices;
 }
 
 bool init(void)
@@ -106,6 +221,17 @@ bool init(void)
 	glEnable(GL_LIGHT0);
 
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+
+	// parametre hmly
+	glFogi(GL_FOG_MODE, GL_LINEAR);
+	GLfloat fogColor[4] = { 0.5f, 0.5f, 0.5f, 1.0f };
+	glFogfv(GL_FOG_COLOR, fogColor);
+	glFogf(GL_FOG_DENSITY, 0.35f);
+	glHint(GL_FOG_HINT, GL_DONT_CARE);
+	glFogf(GL_FOG_START, 3.0f);
+	glFogf(GL_FOG_END, 20.0f);
+	glEnable(GL_FOG);
 
 	return true;
 }
@@ -146,14 +272,25 @@ void mouse_move(int x, int y){
 	if (left_down == true){
 		fi = old_fi + (left_mouse_down_x - x) / 200.0f;
 		xi = old_xi + (y - left_mouse_down_y) / 200.0f;
+		cout << "fi " << fi << endl;
+		cout << "xi " << xi << endl;
 		glutPostRedisplay();
 	}
 
 	if (right_down == true){
-		vzd = old_vzd + (right_mouse_down_y - y) / 10.0f;
-		glutPostRedisplay();
+		if (old_vzd + (right_mouse_down_y - y) / 10.0f > 6.5f){
+			vzd = old_vzd + (right_mouse_down_y - y) / 10.0f;
+			glutPostRedisplay();
+		}
+		cout << "vzd" << vzd << endl;
 	}
 
+}
+
+void timer(int a){
+	fi += 0.001f;
+	glutPostRedisplay();
+	glutTimerFunc(10, timer, a);
 }
 
 int main(int argc, char** argv){
@@ -171,12 +308,11 @@ int main(int argc, char** argv){
 	// Zinicializujeme GLEW
 	glewInit();
 	init();
+	//initSphereVBO(320, 320);
 	glutMouseFunc(mouse_klik);
 	glutMotionFunc(mouse_move);
 	// Nastavime zakladne vlastnosti OpenGL
-	/*init();
-	initSphereVBO(32, 32);
-	initTorusVBO(0.6f, 2.0f, 32, 32);
+	/*initTorusVBO(0.6f, 2.0f, 32, 32);
 	initTextures();
 	initShaders();
 	init2DFontFT("fonts/planetbe.ttf");
@@ -190,21 +326,16 @@ int main(int argc, char** argv){
 	glutMotionFunc(mouse_move);
 	glutTimerFunc(0, timer, 0);
 	*/
-	textureLoader* tl = new textureLoader();
-	tex_skybox = tl->LoadCubeTexture("skybox/snow_positive_x.jpg", "skybox/snow_negative_x.jpg",
-		"skybox/snow_positive_y.jpg", "skybox/snow_negative_y.jpg",
-		"skybox/snow_positive_z.jpg", "skybox/snow_negative_z.jpg");
+	glutTimerFunc(10, timer, 0);
+	sky = new skybox();
+	wor = new world();
 	shaderLoader* sl = new shaderLoader();
-	shaders_skybox = sl->loadProgram("shaders/skybox.vert", "shaders/skybox.frag");
-	sl->SetShaderUniform1i(shaders_skybox, "cube_map", 0);
-
 	shaders_envmap = sl->loadProgram("shaders/perpixel_envmap.vert", "shaders/perpixel_envmap.frag");
 	sl->SetShaderUniform1i(shaders_envmap, "color_texture", 0);
 	sl->SetShaderUniform1i(shaders_envmap, "cubemap_texture", 1);
 	glutDisplayFunc(render);
 	glutReshapeFunc(reshape);
 	worldObject* obj = new worldObject();
-	obj->loadFromFile("ahoj");
 	// Spustenie hlavneho okruhu zachytavania sprav
 	glutMainLoop();
 	return 0;

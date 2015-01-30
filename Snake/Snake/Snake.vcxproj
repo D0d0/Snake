@@ -80,12 +80,16 @@
     <ClInclude Include="glew.h" />
     <ClInclude Include="glut-3.7.6-bin\glut.h" />
     <ClInclude Include="il.h" />
+    <ClInclude Include="skybox.h" />
+    <ClInclude Include="world.h" />
     <ClInclude Include="worldObject.h" />
     <ClInclude Include="shaderLoader.h" />
     <ClInclude Include="snake.h" />
     <ClInclude Include="textureLoader.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="skybox.cpp" />
+    <ClCompile Include="world.cpp" />
     <ClCompile Include="worldObject.cpp" />
     <ClCompile Include="shaderLoader.cpp" />
     <ClCompile Include="snake.cpp" />
