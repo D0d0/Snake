@@ -77,6 +77,7 @@
     <Library Include="glut-3.7.6-bin\glut32.lib" />
     <Library Include="DevIL.lib" />
     <Library Include="freetype.lib" />
+    <Library Include="assimp.lib" />
   </ItemGroup>
   <ItemGroup>
     <None Include="glut-3.7.6-bin\glut.def">
@@ -86,5 +87,6 @@
     <None Include="DevIL.dll" />
     <None Include="freetype6.dll" />
     <None Include="zlib1.dll" />
+    <None Include="Assimp32.dll" />
   </ItemGroup>
 </Project>

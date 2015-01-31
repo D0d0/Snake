@@ -1,5 +1,7 @@
 #define _USE_MATH_DEFINES
 #include <iostream>
+#include <sstream>
+#include <fstream>
 #include "shaderLoader.h"
 #include "textureLoader.h"
 #include "worldObject.h"
@@ -8,8 +10,12 @@
 #include "glew.h"
 #include "glut-3.7.6-bin/glut.h"
 #include "fonts.h"
-//#include "fonts.h"
 #include <math.h>
+#include "assimp/Importer.hpp"
+#include "assimp/scene.h"           
+#include "assimp/postprocess.h"
+
+using namespace Assimp;
 using namespace std;
 
 GLuint  shaders_envmap;
@@ -399,6 +405,22 @@ int main(int argc, char** argv){
 	glutDisplayFunc(render);
 	glutReshapeFunc(reshape);
 	worldObject* obj = new worldObject();
+
+	const aiScene* scene;
+	Importer importer;
+
+	string fileName = "plane/Boeing747.obj";
+	ifstream inFile(fileName.c_str());
+	bool a = inFile.fail() == false;
+
+	scene = importer.ReadFile(fileName, aiProcess_Triangulate);
+
+	if (!scene){
+		cout << "Scene not loaded, beacuse: " << importer.GetErrorString() << endl;
+		//return false;
+	}
+
+
 	// Spustenie hlavneho okruhu zachytavania sprav
 	glutMainLoop();
 	return 0;

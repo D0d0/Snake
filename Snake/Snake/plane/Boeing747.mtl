@@ -1,0 +1,108 @@
+newmtl Material__26
+d 1
+Ns 0.95
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 0.992157 0.992157 0.992157
+Km 0.04
+
+newmtl Material__27
+d 1
+Ns 0.95
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 0.501961 0.501961 0.501961
+Km 0.02
+
+newmtl Material__270
+d 1
+Ns 0.95
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 0.501961 0.501961 0.501961
+Km 0.02
+
+newmtl Material__260
+d 1
+Ns 0.95
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 0.992157 0.992157 0.992157
+Km 0.04
+
+newmtl Material__2701
+d 1
+Ns 0.95
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 0.494118 0.494118 0.494118
+Km 0.02
+
+newmtl Material__2601
+d 1
+Ns 0.95
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 0.992157 0.992157 0.992157
+Km 0.04
+
+newmtl Material__25
+d 1
+Ns 0.95
+Ni 0
+Ka 0 0 0
+Kd 0.984314 0.984314 0.984314
+Ks 0.509804 0.509804 0.509804
+Km 0.00216
+map_Kd /Maps/Arch73_03_Dff.jpg
+map_Bump /Maps/Arch73_03_Bump.jpg
+
+newmtl Material__28
+d 1
+Ns 0.95
+Ni 0
+Ka 0 0 0
+Kd 0.984314 0.984314 0.984314
+Ks 0.509804 0.509804 0.509804
+Km 0.00216
+map_Kd /Maps/Arch73_03_Dff.jpg
+map_Bump /Maps/Arch73_03_Bump.jpg
+
+newmtl Material__29
+d 1
+Ns 0.95
+Ni 0
+Ka 0 0 0
+Kd 0.984314 0.984314 0.984314
+Ks 0.509804 0.509804 0.509804
+Km 0.00216
+map_Kd /Maps/Arch73_03_Dff.jpg
+map_Bump /Maps/Arch73_03_Bump.jpg
+
+newmtl Material__30
+d 1
+Ns 0.95
+Ni 0
+Ka 0 0 0
+Kd 0.984314 0.984314 0.984314
+Ks 0.521569 0.521569 0.521569
+Km 0.02
+map_Kd /Maps/Arch73_03_Dff_Mirr.jpg
+
+newmtl Material__250
+d 1
+Ns 0.95
+Ni 0
+Ka 0 0 0
+Kd 0.984314 0.984314 0.984314
+Ks 0.509804 0.509804 0.509804
+Km 0.00216
+map_Kd /Maps/Arch73_03_Dff.jpg
+map_Bump /Maps/Arch73_03_Bump.jpg
+

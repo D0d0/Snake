@@ -53,7 +53,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\Jozef\Source\Repos\Snake\Snake\Snake\freetype</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Jozef\Source\Repos\Snake\Snake\Snake\freetype;C:\Users\Jozef\Source\Repos\Snake\Snake\Snake\assimp</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -100,12 +100,14 @@
     <ClCompile Include="textureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Library Include="assimp.lib" />
     <Library Include="DevIL.lib" />
     <Library Include="freetype.lib" />
     <Library Include="glew32.lib" />
     <Library Include="glut-3.7.6-bin\glut32.lib" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assimp32.dll" />
     <None Include="DevIL.dll" />
     <None Include="freetype6.dll" />
     <None Include="glut-3.7.6-bin\glut.def" />
