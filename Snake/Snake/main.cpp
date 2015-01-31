@@ -23,7 +23,7 @@ GLdouble vzd, old_vzd, fi, xi, old_fi, old_xi;
 GLint left_mouse_down_x, left_mouse_down_y;
 GLint right_mouse_down_y;
 GLboolean right_down = false, left_down = false;
-GLfloat posunX = 0.0f;
+GLfloat posunX = 2.1f;
 GLfloat posunY = 0.0f;
 GLfloat posunZ = 0.0f;
 GLboolean up = true;
@@ -32,16 +32,14 @@ GLboolean righ = false;
 GLboolean lef = false;
 skybox* sky;
 world* wor;
+GLint wall = 0;
 
 
 GLfloat size = 1.0f;
 // id VBO
-GLuint g_uiVBOSphereCoords, g_uiVBOSphereTexCoords, g_uiVBOSphereNormals, g_uiVBOSphereIndices;
-GLuint g_uiSphereNumIndices;
+GLuint g_uiVBOSphereCoords, g_uiVBOSphereTexCoords, g_uiVBOSphereNormals, g_uiVBOSphereIndices, g_uiSphereNumIndices;
 
 void renderSphereVBO(){
-	glScalef(0.1, 0.1, 0.1);
-	glTranslatef(0, 0, 0);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glBindBuffer(GL_ARRAY_BUFFER, g_uiVBOSphereCoords);
 	glVertexPointer(3, GL_FLOAT, 0, NULL);
@@ -125,14 +123,19 @@ void render(){
 	render2DTextFT(10, 45, "F1 - zapni/vypni animaciu");
 	render3DTextGLUT(6, 0, 2, 0.01, GLUT_STROKE_ROMAN, "Projekt OpenGL - GLUT 3D text");
 
-	glTranslatef(0, posunY, posunZ);
+	glPushMatrix();
+	cout << "posunX " << posunX << endl;
+	cout << "posunY " << posunY << endl;
+	cout << "posunZ " << posunZ << endl;
+	glTranslatef(posunX, posunY, posunZ);
 	GLUquadricObj *quadratic;
 	quadratic = gluNewQuadric();
-	glTranslatef(2.1, 0, 0);
-	glRotatef(0, 0.0f, 1.0f, 0.0f);
+	glRotatef(180, 0.0f, 1.0f, 0.0f);
 	gluCylinder(quadratic, 0.1f, 0.1f, size, 32, 32);
-
+	glScalef(0.1, 0.1, 0.1);
 	renderSphereVBO();
+	glPopMatrix();
+
 	glutSwapBuffers();
 }
 
@@ -244,7 +247,6 @@ bool init(void)
 	glFogf(GL_FOG_START, 3.0f);
 	glFogf(GL_FOG_END, 20.0f);
 	glEnable(GL_FOG);
-
 	return true;
 }
 
@@ -300,19 +302,194 @@ void mouse_move(int x, int y){
 }
 
 void timer(int a){
-	if (righ){
-		posunY += 0.005f;
+	switch (wall){
+	case 0:
+		if (righ){
+			posunY += 0.005f;
+		}
+		if (lef){
+			posunY -= 0.005f;
+		}
+		if (up){
+			posunZ += 0.005f;
+		}
+		if (down){
+			posunZ -= 0.005f;
+		}
+		if (posunZ >= 2.1f){
+			wall = 1;
+		}
+		if (posunZ <= -2.1f){
+			wall = 3;
+			down = false;
+			up = true;
+		}
+		if (posunY >= 2.1f){
+			wall = 4;
+		}
+		if (posunY <= -2.1f){
+			wall = 5;
+		}
+		break;
+	case 1:
+		if (righ){
+			posunY += 0.005f;
+		}
+		if (lef){
+			posunY -= 0.005f;
+		}
+		if (up){
+			posunX -= 0.005f;
+		}
+		if (down){
+			posunX += 0.005f;
+		}
+		if (posunX <= -2.1f){
+			wall = 2;
+			up = false;
+			down = true;
+		}
+		if (posunX >= 2.1f){
+			wall = 0;
+		}
+		if (posunY >= 2.1f){
+			wall = 4;
+			righ = false;
+			down = true;
+		}
+		if (posunY <= -2.1f){
+			wall = 5;
+			lef = false;
+			down = true;
+		}
+		break;
+	case 2:
+		if (righ){
+			posunY -= 0.005f;
+		}
+		if (lef){
+			posunY += 0.005f;
+		}
+		if (up){
+			posunZ += 0.005f;
+		}
+		if (down){
+			posunZ -= 0.005f;
+		}
+		if (posunZ <= -2.1f){
+			wall = 3;
+		}
+		if (posunZ >= 2.1f){
+			wall = 1;
+			up = false;
+			down = true;
+		}
+		if (posunY <= -2.1f){
+			wall = 5;
+		}
+		if (posunY >= 2.1f){
+			wall = 4;
+		}
+		break;
+	case 3:
+		if (righ){
+			posunY += 0.005f;
+		}
+		if (lef){
+			posunY -= 0.005f;
+		}
+		if (up){
+			posunX -= 0.005f;
+		}
+		if (down){
+			posunX += 0.005f;
+		}
+		if (posunX >= 2.1f){
+			wall = 0;
+			up = true;
+			down = false;
+		}
+		if (posunX <= -2.1f){
+			wall = 2;
+		}
+
+		/////
+		if (posunY <= -2.1f){
+			wall = 5;
+			lef = false;
+			up = true;
+		}
+		if (posunY >= 2.1f){
+			wall = 4;
+			righ = false;
+			down = true;
+		}
+
+		///// po tadeto je nieco zle
+		break;
+	case 4:
+		if (righ){
+			posunX -= 0.005f;
+		}
+		if (lef){
+			posunX += 0.005f;
+		}
+		if (up){
+			posunZ += 0.005f;
+		}
+		if (down){
+			posunZ -= 0.005f;
+		}
+		if (posunZ >= 2.1f){
+			wall = 1;
+			up = false;
+			lef= true;
+		}
+		if (posunZ <= -2.1f){
+			wall = 1;
+			down = false;
+			lef = true;;
+		}
+		if (posunX >= 2.1f){
+			wall = 0;
+		}
+		if (posunX <= -2.1f){
+			wall = 2;
+		}
+		break;
+	case 5:
+		if (righ){
+			posunX += 0.005f;
+		}
+		if (lef){
+			posunX -= 0.005f;
+		}
+		if (up){
+			posunZ += 0.005f;
+		}
+		if (down){
+			posunZ -= 0.005f;
+		}
+		if (posunZ >= 2.1f){
+			wall = 1;
+			up = false;
+			righ = true;
+		}
+		if (posunZ <= -2.1f){
+			wall = 1;
+			down = false;
+			righ = true;
+		}
+		if (posunX >= 2.1f){
+			wall = 0;
+		}
+		if (posunX <= -2.1f){
+			wall = 2;
+		}
+		break;
+	default:
+		break;
 	}
-	if (lef){
-		posunY -= 0.005f;
-	}
-	if (up){
-		posunZ += 0.005f;
-	}
-	if (down){
-		posunZ -= 0.005f;
-	}
-	//size += 0.01f;
 	glutPostRedisplay();
 	glutTimerFunc(10, timer, a);
 }
@@ -406,9 +583,9 @@ int main(int argc, char** argv){
 	glutReshapeFunc(reshape);
 	worldObject* obj = new worldObject();
 
-	const aiScene* scene;
+	/*const aiScene* scene;
 	Importer importer;
-
+	cout << "Loading objects..." << endl;
 	string fileName = "plane/Boeing747.obj";
 	ifstream inFile(fileName.c_str());
 	bool a = inFile.fail() == false;
@@ -416,9 +593,9 @@ int main(int argc, char** argv){
 	scene = importer.ReadFile(fileName, aiProcess_Triangulate);
 
 	if (!scene){
-		cout << "Scene not loaded, beacuse: " << importer.GetErrorString() << endl;
-		//return false;
-	}
+	cout << "Scene not loaded, beacuse: " << importer.GetErrorString() << endl;
+	//return false;
+	}*/
 
 
 	// Spustenie hlavneho okruhu zachytavania sprav
