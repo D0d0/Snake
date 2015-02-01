@@ -60,8 +60,8 @@ Ka 0 0 0
 Kd 0.984314 0.984314 0.984314
 Ks 0.509804 0.509804 0.509804
 Km 0.00216
-map_Kd /Maps/Arch73_03_Dff.jpg
-map_Bump /Maps/Arch73_03_Bump.jpg
+map_Kd C:/Users/Jozef/Source/Repos/Snake/Snake/Snake/plane/Maps/Arch73_03_Dff.jpg
+map_Bump C:/Users/Jozef/Source/Repos/Snake/Snake/Snake/plane/Maps/Arch73_03_Bump.jpg
 
 newmtl Material__28
 d 1
@@ -71,8 +71,8 @@ Ka 0 0 0
 Kd 0.984314 0.984314 0.984314
 Ks 0.509804 0.509804 0.509804
 Km 0.00216
-map_Kd /Maps/Arch73_03_Dff.jpg
-map_Bump /Maps/Arch73_03_Bump.jpg
+map_Kd C:/Users/Jozef/Source/Repos/Snake/Snake/Snake/plane/Maps/Arch73_03_Dff.jpg
+map_Bump C:/Users/Jozef/Source/Repos/Snake/Snake/Snake/plane/Maps/Arch73_03_Bump.jpg
 
 newmtl Material__29
 d 1
@@ -82,8 +82,8 @@ Ka 0 0 0
 Kd 0.984314 0.984314 0.984314
 Ks 0.509804 0.509804 0.509804
 Km 0.00216
-map_Kd /Maps/Arch73_03_Dff.jpg
-map_Bump /Maps/Arch73_03_Bump.jpg
+map_Kd C:/Users/Jozef/Source/Repos/Snake/Snake/Snake/plane/Maps/Arch73_03_Dff.jpg
+map_Bump C:/Users/Jozef/Source/Repos/Snake/Snake/Snake/plane/Maps/Arch73_03_Bump.jpg
 
 newmtl Material__30
 d 1
@@ -93,7 +93,7 @@ Ka 0 0 0
 Kd 0.984314 0.984314 0.984314
 Ks 0.521569 0.521569 0.521569
 Km 0.02
-map_Kd /Maps/Arch73_03_Dff_Mirr.jpg
+map_Kd C:/Users/Jozef/Source/Repos/Snake/Snake/Snake/plane/Maps/Arch73_03_Dff_Mirr.jpg
 
 newmtl Material__250
 d 1
@@ -103,6 +103,6 @@ Ka 0 0 0
 Kd 0.984314 0.984314 0.984314
 Ks 0.509804 0.509804 0.509804
 Km 0.00216
-map_Kd /Maps/Arch73_03_Dff.jpg
-map_Bump /Maps/Arch73_03_Bump.jpg
+map_Kd C:/Users/Jozef/Source/Repos/Snake/Snake/Snake/plane/Maps/Arch73_03_Dff.jpg
+map_Bump C:/Users/Jozef/Source/Repos/Snake/Snake/Snake/plane/Maps/Arch73_03_Bump.jpg
 

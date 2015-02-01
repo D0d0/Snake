@@ -14,6 +14,9 @@
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"           
 #include "assimp/postprocess.h"
+#include "Mesh.h"
+#include "Sphere.h"
+#include <vector>
 
 using namespace Assimp;
 using namespace std;
@@ -33,37 +36,13 @@ GLboolean lef = false;
 skybox* sky;
 world* wor;
 GLint wall = 0;
+Mesh* obj;
+Sphere* gula;
+Sphere* gula1;
 
+vector<Sphere*> gule;
+GLfloat size = 0.5f;
 
-GLfloat size = 1.0f;
-// id VBO
-GLuint g_uiVBOSphereCoords, g_uiVBOSphereTexCoords, g_uiVBOSphereNormals, g_uiVBOSphereIndices, g_uiSphereNumIndices;
-
-void renderSphereVBO(){
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glBindBuffer(GL_ARRAY_BUFFER, g_uiVBOSphereCoords);
-	glVertexPointer(3, GL_FLOAT, 0, NULL);
-
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glBindBuffer(GL_ARRAY_BUFFER, g_uiVBOSphereTexCoords);
-	glTexCoordPointer(2, GL_FLOAT, 0, NULL);
-
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glBindBuffer(GL_ARRAY_BUFFER, g_uiVBOSphereNormals);
-	glNormalPointer(GL_FLOAT, 0, NULL);
-
-	// draw a cube using buffer with indices
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_uiVBOSphereIndices);
-	glDrawElements(GL_QUADS, g_uiSphereNumIndices, GL_UNSIGNED_INT, NULL);
-
-	// deactivate vertex arrays after drawing
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
 
 void reshape(int w, int h){
 
@@ -119,7 +98,12 @@ void render(){
 	sky->render();
 	//vykresli kocku
 	wor->render();
-
+	glPushMatrix();
+	glScalef(0.1f, 0.1f, 0.1f);
+	glRotatef(90, 1.0f, 0, 0);
+	glTranslatef(0, 2.1f, 0);
+	//obj->render();
+	glPopMatrix();
 	render2DTextFT(10, 45, "F1 - zapni/vypni animaciu");
 	render3DTextGLUT(6, 0, 2, 0.01, GLUT_STROKE_ROMAN, "Projekt OpenGL - GLUT 3D text");
 
@@ -133,76 +117,27 @@ void render(){
 	glRotatef(180, 0.0f, 1.0f, 0.0f);
 	gluCylinder(quadratic, 0.1f, 0.1f, size, 32, 32);
 	glScalef(0.1, 0.1, 0.1);
-	renderSphereVBO();
+	gula->render();
 	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(posunX, posunY, posunZ - size);
+
+	glScalef(0.1, 0.1, 0.1);
+	gula1->render();
+	glPopMatrix();
+	for each (Sphere* var in gule){
+		glPushMatrix();
+		glTranslatef(var->posunX, var->posunY, var->posunZ);
+
+		glScalef(0.1, 0.1, 0.1);
+		var->render();
+		glPopMatrix();
+	}
 
 	glutSwapBuffers();
 }
 
-void initSphereVBO(int xSlices, int ySlices)
-{
-	float* vertices = new float[3 * (xSlices + 1) * (ySlices + 1)];
-	float* normals = new float[3 * (xSlices + 1) * (ySlices + 1)];
-	float* texcoords = new float[2 * (xSlices + 1) * (ySlices + 1)];
-
-	for (int i = 0; i <= xSlices; i++)
-	{
-		float u = i / float(xSlices);
-		for (int j = 0; j <= ySlices; j++)
-		{
-			float v = j / float(ySlices);
-
-			int index = i + j * (xSlices + 1);
-
-			vertices[3 * index + 0] = cos(2 * u * M_PI) * cos((v - 0.5f) * M_PI);
-			vertices[3 * index + 1] = sin(2 * u * M_PI) * cos((v - 0.5f) * M_PI);
-			vertices[3 * index + 2] = sin((v - 0.5f) * M_PI);
-
-			normals[3 * index + 0] = vertices[3 * index + 0];
-			normals[3 * index + 1] = vertices[3 * index + 1];
-			normals[3 * index + 2] = vertices[3 * index + 2];
-
-			texcoords[2 * index + 0] = u;
-			texcoords[2 * index + 1] = 1.0f - v;
-		}
-	}
-
-	GLuint* indices = new GLuint[4 * xSlices * ySlices];
-	int index = 0;
-	for (int i = 0; i < xSlices; i++)
-	{
-		for (int j = 0; j < ySlices; j++)
-		{
-			indices[index++] = i + j * (xSlices + 1);
-			indices[index++] = (i + 1) + j * (xSlices + 1);
-			indices[index++] = (i + 1) + (j + 1) * (xSlices + 1);
-			indices[index++] = i + (j + 1) * (xSlices + 1);
-		}
-	}
-
-	glGenBuffers(1, &g_uiVBOSphereCoords);
-	glBindBuffer(GL_ARRAY_BUFFER, g_uiVBOSphereCoords);
-	glBufferData(GL_ARRAY_BUFFER, 3 * (xSlices + 1) * (ySlices + 1) * sizeof(float), vertices, GL_STATIC_DRAW);
-
-	glGenBuffers(1, &g_uiVBOSphereNormals);
-	glBindBuffer(GL_ARRAY_BUFFER, g_uiVBOSphereNormals);
-	glBufferData(GL_ARRAY_BUFFER, 3 * (xSlices + 1) * (ySlices + 1) * sizeof(float), normals, GL_STATIC_DRAW);
-
-	glGenBuffers(1, &g_uiVBOSphereTexCoords);
-	glBindBuffer(GL_ARRAY_BUFFER, g_uiVBOSphereTexCoords);
-	glBufferData(GL_ARRAY_BUFFER, 2 * (xSlices + 1) * (ySlices + 1) * sizeof(float), texcoords, GL_STATIC_DRAW);
-
-	glGenBuffers(1, &g_uiVBOSphereIndices);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_uiVBOSphereIndices);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * (xSlices + 0) * (ySlices + 0) * sizeof(GLuint), indices, GL_STATIC_DRAW);
-
-	g_uiSphereNumIndices = 4 * (xSlices + 0) * (ySlices + 0);
-
-	delete[] vertices;
-	delete[] normals;
-	delete[] texcoords;
-	delete[] indices;
-}
 
 bool init(void)
 {
@@ -443,7 +378,7 @@ void timer(int a){
 		if (posunZ >= 2.1f){
 			wall = 1;
 			up = false;
-			lef= true;
+			lef = true;
 		}
 		if (posunZ <= -2.1f){
 			wall = 1;
@@ -476,7 +411,7 @@ void timer(int a){
 			righ = true;
 		}
 		if (posunZ <= -2.1f){
-			wall = 1;
+			wall = 3;
 			down = false;
 			righ = true;
 		}
@@ -505,8 +440,14 @@ void keyboard(unsigned char key, int x, int y){
 }
 
 void special_keys(int a_keys, int x, int y){
+	Sphere* tmp = new Sphere(500, 500);
+	tmp->setPosition(posunX, posunY, posunZ);
+	gule.push_back(tmp);
 	switch (a_keys){
 	case GLUT_KEY_DOWN:
+		if (up){
+			return;
+		}
 		up = false;
 		righ = false;
 		down = true;
@@ -514,6 +455,9 @@ void special_keys(int a_keys, int x, int y){
 		glutPostRedisplay();
 		break;
 	case GLUT_KEY_UP:
+		if (down){
+			return;
+		}
 		up = true;
 		righ = false;
 		down = false;
@@ -521,12 +465,18 @@ void special_keys(int a_keys, int x, int y){
 		glutPostRedisplay();
 		break;
 	case GLUT_KEY_LEFT:
+		if (righ){
+			return;
+		}
 		up = false;
 		righ = false;
 		down = false;
 		lef = true;
 		break;
 	case GLUT_KEY_RIGHT:
+		if (lef){
+			return;
+		}
 		up = false;
 		righ = true;
 		down = false;
@@ -553,32 +503,22 @@ int main(int argc, char** argv){
 	// Zinicializujeme GLEW
 	glewInit();
 	init();
-	initSphereVBO(500, 500);
+	gula = new Sphere(500, 500);
+	gula1 = new Sphere(500, 500);
 	glutMouseFunc(mouse_klik);
 	glutMotionFunc(mouse_move);
-	// Nastavime zakladne vlastnosti OpenGL
-	/*initTorusVBO(0.6f, 2.0f, 32, 32);
-	initTextures();
-	initShaders();
-	init2DFontFT("fonts/planetbe.ttf");
-
-	// Zaregistrujeme callback funkcie
-	glutDisplayFunc(render);
-	glutReshapeFunc(reshape);
-	glutSpecialFunc(special_keys);
-	glutMouseFunc(mouse_klik);
-	glutMotionFunc(mouse_move);
-	glutTimerFunc(0, timer, 0);
-	*/
 	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(special_keys);
 	glutTimerFunc(10, timer, 0);
+	//obj = new Mesh("plane/Boeing747.obj");
 	sky = new skybox();
 	wor = new world();
+
 	shaderLoader* sl = new shaderLoader();
 	shaders_envmap = sl->loadProgram("shaders/perpixel_envmap.vert", "shaders/perpixel_envmap.frag");
 	sl->SetShaderUniform1i(shaders_envmap, "color_texture", 0);
 	sl->SetShaderUniform1i(shaders_envmap, "cubemap_texture", 1);
+
 	glutDisplayFunc(render);
 	glutReshapeFunc(reshape);
 	worldObject* obj = new worldObject();

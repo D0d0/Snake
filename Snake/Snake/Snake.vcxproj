@@ -82,7 +82,9 @@
     <ClInclude Include="glew.h" />
     <ClInclude Include="glut-3.7.6-bin\glut.h" />
     <ClInclude Include="il.h" />
+    <ClInclude Include="Mesh.h" />
     <ClInclude Include="skybox.h" />
+    <ClInclude Include="Sphere.h" />
     <ClInclude Include="world.h" />
     <ClInclude Include="worldObject.h" />
     <ClInclude Include="shaderLoader.h" />
@@ -91,7 +93,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="fonts.cpp" />
+    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="skybox.cpp" />
+    <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="world.cpp" />
     <ClCompile Include="worldObject.cpp" />
     <ClCompile Include="shaderLoader.cpp" />
