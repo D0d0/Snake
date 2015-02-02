@@ -10,11 +10,13 @@
 #include "glew.h"
 #include "glut-3.7.6-bin/glut.h"
 #include "fonts.h"
+#include "il.h"
 #include <math.h>
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"           
 #include "assimp/postprocess.h"
-#include "Mesh.h"
+#include "Model.h"
+#include "ObjectLoader.h"
 #include "Sphere.h"
 #include <vector>
 
@@ -36,7 +38,7 @@ GLboolean lef = false;
 skybox* sky;
 world* wor;
 GLint wall = 0;
-Mesh* obj;
+Model obj;
 Sphere* gula;
 Sphere* gula1;
 
@@ -84,7 +86,6 @@ void render(){
 
 	shaderLoader* sl = new shaderLoader();
 	sl->SetShaderUniformMatrix4f(shaders_envmap, "view_matrix", view_matrix);
-
 	// vykresli suradnicove osi svetoveho systemu roznymi farbami
 	glLineWidth(1);
 	glBegin(GL_LINES);
@@ -92,7 +93,6 @@ void render(){
 	glColor3f(0.0f, 1.0f, 0.0f); glVertex3f(0.0f, 0.0f, 0.0f); glVertex3f(0.0f, 100.0f, 0.0f);
 	glColor3f(0.0f, 0.0f, 1.0f); glVertex3f(0.0f, 0.0f, 0.0f); glVertex3f(0.0f, 0.0f, 100.0f);
 	glEnd();
-
 	// vykresli skybox
 	// skybox je dany vo svetovych suradniciach, akurat jeho stred je stale v bode, kdeje kamera
 	sky->render();
@@ -102,15 +102,14 @@ void render(){
 	glScalef(0.1f, 0.1f, 0.1f);
 	glRotatef(90, 1.0f, 0, 0);
 	glTranslatef(0, 2.1f, 0);
-	//obj->render();
 	glPopMatrix();
 	render2DTextFT(10, 45, "F1 - zapni/vypni animaciu");
 	render3DTextGLUT(6, 0, 2, 0.01, GLUT_STROKE_ROMAN, "Projekt OpenGL - GLUT 3D text");
 
 	glPushMatrix();
-	cout << "posunX " << posunX << endl;
-	cout << "posunY " << posunY << endl;
-	cout << "posunZ " << posunZ << endl;
+	//cout << "posunX " << posunX << endl;
+	//cout << "posunY " << posunY << endl;
+	//cout << "posunZ " << posunZ << endl;
 	glTranslatef(posunX, posunY, posunZ);
 	GLUquadricObj *quadratic;
 	quadratic = gluNewQuadric();
@@ -126,6 +125,7 @@ void render(){
 	glScalef(0.1, 0.1, 0.1);
 	gula1->render();
 	glPopMatrix();
+
 	for each (Sphere* var in gule){
 		glPushMatrix();
 		glTranslatef(var->posunX, var->posunY, var->posunZ);
@@ -134,6 +134,13 @@ void render(){
 		var->render();
 		glPopMatrix();
 	}
+
+	glColor3f(1, 1, 1);
+
+	glPushMatrix();
+	glRotatef(90, 1, 0, 0);
+	obj.render();
+	glPopMatrix();
 
 	glutSwapBuffers();
 }
@@ -181,7 +188,7 @@ bool init(void)
 	glHint(GL_FOG_HINT, GL_DONT_CARE);
 	glFogf(GL_FOG_START, 3.0f);
 	glFogf(GL_FOG_END, 20.0f);
-	glEnable(GL_FOG);
+	//glEnable(GL_FOG);
 	return true;
 }
 
@@ -440,7 +447,7 @@ void keyboard(unsigned char key, int x, int y){
 }
 
 void special_keys(int a_keys, int x, int y){
-	Sphere* tmp = new Sphere(500, 500);
+	Sphere* tmp = new Sphere(15, 15);
 	tmp->setPosition(posunX, posunY, posunZ);
 	gule.push_back(tmp);
 	switch (a_keys){
@@ -503,17 +510,20 @@ int main(int argc, char** argv){
 	// Zinicializujeme GLEW
 	glewInit();
 	init();
-	gula = new Sphere(500, 500);
-	gula1 = new Sphere(500, 500);
+	ilInit();
+	gula = new Sphere(15, 15);
+	gula1 = new Sphere(15, 15);
 	glutMouseFunc(mouse_klik);
 	glutMotionFunc(mouse_move);
 	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(special_keys);
 	glutTimerFunc(10, timer, 0);
-	//obj = new Mesh("plane/Boeing747.obj");
+	ObjectLoader loader = ObjectLoader();
 	sky = new skybox();
 	wor = new world();
 
+	loader.loadModel("hulk/hulk.obj");
+	obj = loader.getModel();
 	shaderLoader* sl = new shaderLoader();
 	shaders_envmap = sl->loadProgram("shaders/perpixel_envmap.vert", "shaders/perpixel_envmap.frag");
 	sl->SetShaderUniform1i(shaders_envmap, "color_texture", 0);
@@ -521,8 +531,7 @@ int main(int argc, char** argv){
 
 	glutDisplayFunc(render);
 	glutReshapeFunc(reshape);
-	worldObject* obj = new worldObject();
-
+	//worldObject* obj = new worldObject();
 	/*const aiScene* scene;
 	Importer importer;
 	cout << "Loading objects..." << endl;

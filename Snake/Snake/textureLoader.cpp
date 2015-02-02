@@ -14,8 +14,6 @@ textureLoader::~textureLoader()
 // navratova hodnota je OpenGL id textury 
 GLuint textureLoader::LoadTexture(const char* tex_file)
 {
-	// iniciailizacia OpenIL
-	ilInit();
 
 	ILuint texIL;
 	ilGenImages(1, &texIL);

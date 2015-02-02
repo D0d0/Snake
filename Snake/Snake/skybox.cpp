@@ -34,7 +34,6 @@ skybox::skybox()
 	shaderLoader* sl = new shaderLoader();
 	shaders_skybox = sl->loadProgram("shaders/skybox.vert", "shaders/skybox.frag");
 	sl->SetShaderUniform1i(shaders_skybox, "cube_map", 0);
-
 	glGenBuffers(1, &g_uiVBOCubeCoords);
 	glBindBuffer(GL_ARRAY_BUFFER, g_uiVBOCubeCoords);
 	glBufferData(GL_ARRAY_BUFFER, 24 * 3 * sizeof(float), cube_vertices, GL_STATIC_DRAW);
