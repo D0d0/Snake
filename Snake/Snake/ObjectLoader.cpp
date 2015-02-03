@@ -111,12 +111,15 @@ bool ObjectLoader::loadModel(const string& fileName){
 	scene = importer.ReadFile(fileName, aiProcess_Triangulate);
 
 	if (!scene){
-		cout <<  importer.GetErrorString() << endl;
+		cout << importer.GetErrorString() << endl;
 		return false;
 	}
 	directory = programPath + getDirectory(fileName);
 	cout << "directory: " << directory << endl;
 	processScene(&model);
+	if (&model != NULL){
+		model.calculateBoundingBox();
+	}
 	cout << "Import file " << fileName << " succesfull." << endl;
 	return true;
 };
@@ -235,7 +238,7 @@ void ObjectLoader::genBuffers(aiMesh* sceneMesh, Mesh* mesh){
 	mesh->normals = convert(sceneMesh->mNormals, sceneMesh->mNumVertices);
 	mesh->vertices = convert(sceneMesh->mVertices, sceneMesh->mNumVertices);
 	mesh->verticesCount = sceneMesh->mNumVertices;
-
+	mesh->setBundingBox();
 	unbindBuffers();
 }
 

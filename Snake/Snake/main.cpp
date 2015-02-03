@@ -4,7 +4,6 @@
 #include <fstream>
 #include "shaderLoader.h"
 #include "textureLoader.h"
-#include "worldObject.h"
 #include "skybox.h"
 #include "world.h"
 #include "glew.h"
@@ -18,7 +17,11 @@
 #include "Model.h"
 #include "ObjectLoader.h"
 #include "Sphere.h"
+#include "snake.h"
 #include <vector>
+#include "glm\glm.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#include "glm/gtx/string_cast.hpp"
 
 using namespace Assimp;
 using namespace std;
@@ -28,24 +31,17 @@ GLdouble vzd, old_vzd, fi, xi, old_fi, old_xi;
 GLint left_mouse_down_x, left_mouse_down_y;
 GLint right_mouse_down_y;
 GLboolean right_down = false, left_down = false;
-GLfloat posunX = 2.1f;
-GLfloat posunY = 0.0f;
-GLfloat posunZ = 0.0f;
 GLboolean up = true;
 GLboolean down = false;
 GLboolean righ = false;
 GLboolean lef = false;
 skybox* sky;
 world* wor;
-GLint wall = 0;
 Model obj;
-Sphere* gula;
-Sphere* gula1;
-
-vector<Sphere*> gule;
-GLfloat size = 0.5f;
+snake* sn;
 
 
+ofstream logFile;
 void reshape(int w, int h){
 
 	// nastvenie casti okna pre vykreslenie, tentoraz kreslime do celeho okna
@@ -105,42 +101,76 @@ void render(){
 	glPopMatrix();
 	render2DTextFT(10, 45, "F1 - zapni/vypni animaciu");
 	render3DTextGLUT(6, 0, 2, 0.01, GLUT_STROKE_ROMAN, "Projekt OpenGL - GLUT 3D text");
-
-	glPushMatrix();
-	//cout << "posunX " << posunX << endl;
-	//cout << "posunY " << posunY << endl;
-	//cout << "posunZ " << posunZ << endl;
-	glTranslatef(posunX, posunY, posunZ);
-	GLUquadricObj *quadratic;
-	quadratic = gluNewQuadric();
-	glRotatef(180, 0.0f, 1.0f, 0.0f);
-	gluCylinder(quadratic, 0.1f, 0.1f, size, 32, 32);
-	glScalef(0.1, 0.1, 0.1);
-	gula->render();
-	glPopMatrix();
-
-	glPushMatrix();
-	glTranslatef(posunX, posunY, posunZ - size);
-
-	glScalef(0.1, 0.1, 0.1);
-	gula1->render();
-	glPopMatrix();
-
-	for each (Sphere* var in gule){
-		glPushMatrix();
-		glTranslatef(var->posunX, var->posunY, var->posunZ);
-
-		glScalef(0.1, 0.1, 0.1);
-		var->render();
-		glPopMatrix();
-	}
+	
+	sn->render();
 
 	glColor3f(1, 1, 1);
 
 	glPushMatrix();
-	glRotatef(90, 1, 0, 0);
+	glTranslatef(-2, 0.3, 0);
+	glRotatef(90, 0, 0, 1);
+	glScalef(0.005, 0.005, 0.005);
 	obj.render();
+	obj.renderBoundingBox();
+
 	glPopMatrix();
+
+	
+
+
+
+	logFile << obj.getCollision(sn->bod1.x, sn->bod1.y, sn->bod1.z) << " " << endl;
+	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod1.x << " " << sn->bod1.y << " " << sn->bod1.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;
+	
+	logFile << obj.getCollision(sn->bod2.x, sn->bod2.y, sn->bod2.z) << " " << endl;
+	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod2.x << " " << sn->bod2.y << " " << sn->bod2.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;
+
+	logFile << obj.getCollision(sn->bod3.x, sn->bod3.y, sn->bod3.z) << " " << endl;
+	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod3.x << " " << sn->bod3.y << " " << sn->bod3.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;
+
+	logFile << obj.getCollision(sn->bod4.x, sn->bod4.y, sn->bod4.z) << " " << endl;
+	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod4.x << " " << sn->bod4.y << " " << sn->bod4.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;
+
+
+
+	logFile << obj.getCollision(sn->bod5.x, sn->bod5.y, sn->bod5.z) << " " << endl;
+	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod5.x << " " << sn->bod5.y << " " << sn->bod5.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;
+
+	logFile << obj.getCollision(sn->bod6.x, sn->bod6.y, sn->bod6.z) << " " << endl;
+	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod6.x << " " << sn->bod6.y << " " << sn->bod6.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;
+
+	logFile << obj.getCollision(sn->bod7.x, sn->bod7.y, sn->bod7.z) << " " << endl;
+	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod7.x << " " << sn->bod7.y << " " << sn->bod7.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;
+
+	logFile << obj.getCollision(sn->bod8.x, sn->bod8.y, sn->bod8.z) << " " << endl;
+	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod8.x << " " << sn->bod8.y << " " << sn->bod8.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;
+
+
+
 
 	glutSwapBuffers();
 }
@@ -244,125 +274,126 @@ void mouse_move(int x, int y){
 }
 
 void timer(int a){
-	switch (wall){
+	//cout << sn->getWall() << endl;
+	switch (sn->getWall()){
 	case 0:
 		if (righ){
-			posunY += 0.005f;
+			sn->posunY += 0.005f;
 		}
 		if (lef){
-			posunY -= 0.005f;
+			sn->posunY -= 0.005f;
 		}
 		if (up){
-			posunZ += 0.005f;
+			sn->posunZ += 0.005f;
 		}
 		if (down){
-			posunZ -= 0.005f;
+			sn->posunZ -= 0.005f;
 		}
-		if (posunZ >= 2.1f){
-			wall = 1;
+		if (sn->posunZ >= 2.1f){
+			sn->setWall(1);
 		}
-		if (posunZ <= -2.1f){
-			wall = 3;
+		if (sn->posunZ <= -2.1f){
+			sn->setWall(3);
 			down = false;
 			up = true;
 		}
-		if (posunY >= 2.1f){
-			wall = 4;
+		if (sn->posunY >= 2.1f){
+			sn->setWall(4);
 		}
-		if (posunY <= -2.1f){
-			wall = 5;
+		if (sn->posunY <= -2.1f){
+			sn->setWall(5);
 		}
 		break;
 	case 1:
 		if (righ){
-			posunY += 0.005f;
+			sn->posunY += 0.005f;
 		}
 		if (lef){
-			posunY -= 0.005f;
+			sn->posunY -= 0.005f;
 		}
 		if (up){
-			posunX -= 0.005f;
+			sn->posunX -= 0.005f;
 		}
 		if (down){
-			posunX += 0.005f;
+			sn->posunX += 0.005f;
 		}
-		if (posunX <= -2.1f){
-			wall = 2;
+		if (sn->posunX <= -2.1f){
+			sn->setWall(2);
 			up = false;
 			down = true;
 		}
-		if (posunX >= 2.1f){
-			wall = 0;
+		if (sn->posunX >= 2.1f){
+			sn->setWall(0);
 		}
-		if (posunY >= 2.1f){
-			wall = 4;
+		if (sn->posunY >= 2.1f){
+			sn->setWall(4);
 			righ = false;
 			down = true;
 		}
-		if (posunY <= -2.1f){
-			wall = 5;
+		if (sn->posunY <= -2.1f){
+			sn->setWall(5);
 			lef = false;
 			down = true;
 		}
 		break;
 	case 2:
 		if (righ){
-			posunY -= 0.005f;
+			sn->posunY -= 0.005f;
 		}
 		if (lef){
-			posunY += 0.005f;
+			sn->posunY += 0.005f;
 		}
 		if (up){
-			posunZ += 0.005f;
+			sn->posunZ += 0.005f;
 		}
 		if (down){
-			posunZ -= 0.005f;
+			sn->posunZ -= 0.005f;
 		}
-		if (posunZ <= -2.1f){
-			wall = 3;
+		if (sn->posunZ <= -2.1f){
+			sn->setWall(3);
 		}
-		if (posunZ >= 2.1f){
-			wall = 1;
+		if (sn->posunZ >= 2.1f){
+			sn->setWall(1);
 			up = false;
 			down = true;
 		}
-		if (posunY <= -2.1f){
-			wall = 5;
+		if (sn->posunY <= -2.1f){
+			sn->setWall(5);
 		}
-		if (posunY >= 2.1f){
-			wall = 4;
+		if (sn->posunY >= 2.1f){
+			sn->setWall(4);
 		}
 		break;
 	case 3:
 		if (righ){
-			posunY += 0.005f;
+			sn->posunY += 0.005f;
 		}
 		if (lef){
-			posunY -= 0.005f;
+			sn->posunY -= 0.005f;
 		}
 		if (up){
-			posunX -= 0.005f;
+			sn->posunX -= 0.005f;
 		}
 		if (down){
-			posunX += 0.005f;
+			sn->posunX += 0.005f;
 		}
-		if (posunX >= 2.1f){
-			wall = 0;
+		if (sn->posunX >= 2.1f){
+			sn->setWall(0);
 			up = true;
 			down = false;
 		}
-		if (posunX <= -2.1f){
-			wall = 2;
+		if (sn->posunX <= -2.1f){
+			sn->setWall(2);
 		}
 
 		/////
-		if (posunY <= -2.1f){
-			wall = 5;
+		if (sn->posunY <= -2.1f){
+			sn->setWall(5);
 			lef = false;
 			up = true;
 		}
-		if (posunY >= 2.1f){
-			wall = 4;
+		if (sn->posunY >= 2.1f){
+			sn->setWall(4);
 			righ = false;
 			down = true;
 		}
@@ -371,62 +402,62 @@ void timer(int a){
 		break;
 	case 4:
 		if (righ){
-			posunX -= 0.005f;
+			sn->posunX -= 0.005f;
 		}
 		if (lef){
-			posunX += 0.005f;
+			sn->posunX += 0.005f;
 		}
 		if (up){
-			posunZ += 0.005f;
+			sn->posunZ += 0.005f;
 		}
 		if (down){
-			posunZ -= 0.005f;
+			sn->posunZ -= 0.005f;
 		}
-		if (posunZ >= 2.1f){
-			wall = 1;
+		if (sn->posunZ >= 2.1f){
+			sn->setWall(1);
 			up = false;
 			lef = true;
 		}
-		if (posunZ <= -2.1f){
-			wall = 1;
+		if (sn->posunZ <= -2.1f){
+			sn->setWall(1);
 			down = false;
-			lef = true;;
+			lef = true;
 		}
-		if (posunX >= 2.1f){
-			wall = 0;
+		if (sn->posunX >= 2.1f){
+			sn->setWall(0);
 		}
-		if (posunX <= -2.1f){
-			wall = 2;
+		if (sn->posunX <= -2.1f){
+			sn->setWall(2);
 		}
 		break;
 	case 5:
 		if (righ){
-			posunX += 0.005f;
+			sn->posunX += 0.005f;
 		}
 		if (lef){
-			posunX -= 0.005f;
+			sn->posunX -= 0.005f;
 		}
 		if (up){
-			posunZ += 0.005f;
+			sn->posunZ += 0.005f;
 		}
 		if (down){
-			posunZ -= 0.005f;
+			sn->posunZ -= 0.005f;
 		}
-		if (posunZ >= 2.1f){
-			wall = 1;
+		if (sn->posunZ >= 2.1f){
+			sn->setWall(1);
 			up = false;
 			righ = true;
 		}
-		if (posunZ <= -2.1f){
-			wall = 3;
+		if (sn->posunZ <= -2.1f){
+			sn->setWall(3);
 			down = false;
 			righ = true;
 		}
-		if (posunX >= 2.1f){
-			wall = 0;
+		if (sn->posunX >= 2.1f){
+			sn->setWall(0);
 		}
-		if (posunX <= -2.1f){
-			wall = 2;
+		if (sn->posunX <= -2.1f){
+			sn->setWall(2);
 		}
 		break;
 	default:
@@ -447,9 +478,7 @@ void keyboard(unsigned char key, int x, int y){
 }
 
 void special_keys(int a_keys, int x, int y){
-	Sphere* tmp = new Sphere(15, 15);
-	tmp->setPosition(posunX, posunY, posunZ);
-	gule.push_back(tmp);
+	sn->addSphere();
 	switch (a_keys){
 	case GLUT_KEY_DOWN:
 		if (up){
@@ -496,6 +525,7 @@ void special_keys(int a_keys, int x, int y){
 
 
 int main(int argc, char** argv){
+	logFile.open("test.txt");
 	// GLUT Inicializacia
 	glutInit(&argc, argv);
 	// Display Mod (Rgb a Double Buffering)
@@ -511,8 +541,7 @@ int main(int argc, char** argv){
 	glewInit();
 	init();
 	ilInit();
-	gula = new Sphere(15, 15);
-	gula1 = new Sphere(15, 15);
+	sn = new snake();
 	glutMouseFunc(mouse_klik);
 	glutMotionFunc(mouse_move);
 	glutKeyboardFunc(keyboard);
@@ -521,9 +550,9 @@ int main(int argc, char** argv){
 	ObjectLoader loader = ObjectLoader();
 	sky = new skybox();
 	wor = new world();
-
+	//loader.loadModel("hulk/hulk.obj");
 	//loader.loadModel("mountain/Mountain Dew Code Red soda can.obj");
-	loader.loadModel("Apple/apple.obj");
+	loader.loadModel("apple/Apple.obj");
 	obj = loader.getModel();
 	shaderLoader* sl = new shaderLoader();
 	shaders_envmap = sl->loadProgram("shaders/perpixel_envmap.vert", "shaders/perpixel_envmap.frag");
@@ -550,5 +579,6 @@ int main(int argc, char** argv){
 
 	// Spustenie hlavneho okruhu zachytavania sprav
 	glutMainLoop();
+	logFile.close();
 	return 0;
 }

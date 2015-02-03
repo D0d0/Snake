@@ -5,10 +5,12 @@
 #include "glew.h"
 #include "glut-3.7.6-bin\glut.h"
 
+
 Sphere::Sphere(int xSlices, int ySlices)
 {
-	float* vertices = new float[3 * (xSlices + 1) * (ySlices + 1)];
-	float* normals = new float[3 * (xSlices + 1) * (ySlices + 1)];
+	size = 3 * (xSlices + 1) * (ySlices + 1);
+	vertices = new float[size];
+	float* normals = new float[size];
 	float* texcoords = new float[2 * (xSlices + 1) * (ySlices + 1)];
 
 	for (int i = 0; i <= xSlices; i++)
@@ -64,10 +66,117 @@ Sphere::Sphere(int xSlices, int ySlices)
 
 	g_uiSphereNumIndices = 4 * (xSlices + 0) * (ySlices + 0);
 
-	delete[] vertices;
 	delete[] normals;
 	delete[] texcoords;
 	delete[] indices;
+	calculateBoundingBox();
+}
+
+
+void Sphere::renderBoundingBox(){
+	glColor3f(1, 0, 0);
+	glBegin(GL_LINES);
+	glVertex3f(minX, minY, minZ);
+	glVertex3f(maxX, minY, minZ);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(minX, minY, minZ);
+	glVertex3f(minX, maxY, minZ);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(minX, minY, minZ);
+	glVertex3f(minX, minY, maxZ);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(maxX, maxY, maxZ);
+	glVertex3f(minX, maxY, maxZ);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(maxX, maxY, maxZ);
+	glVertex3f(maxX, minY, maxZ);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(maxX, maxY, maxZ);
+	glVertex3f(maxX, maxY, minZ);
+	glEnd();
+
+
+
+
+
+	glBegin(GL_LINES);
+	glVertex3f(maxX, maxY, minZ);
+	glVertex3f(maxX, minY, minZ);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(maxX, maxY, minZ);
+	glVertex3f(minX, maxY, minZ);
+	glEnd();
+
+
+	glBegin(GL_LINES);
+	glVertex3f(maxX, minY, maxZ);
+	glVertex3f(maxX, minY, minZ);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(maxX, minY, maxZ);
+	glVertex3f(minX, minY, maxZ);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(minX, maxY, maxZ);
+	glVertex3f(minX, minY, maxZ);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(minX, maxY, maxZ);
+	glVertex3f(minX, maxY, minZ);
+	glEnd();
+
+
+
+
+}
+
+
+void Sphere::calculateBoundingBox(){
+	minX = INT_MAX;
+	minY = INT_MAX;
+	minZ = INT_MAX;
+
+	maxX = INT_MIN;
+	maxY = INT_MIN;
+	maxZ = INT_MIN;
+	for (int i = 0; i < size; ){
+		if (vertices[i] < minX){
+			minX = vertices[i];
+		}
+		if (vertices[i] > maxX){
+			maxX = vertices[i];
+		}
+
+		if (vertices[i+1] < minY){
+			minY = vertices[i + 1];
+		}
+		if (vertices[i+1] > maxY){
+			maxY = vertices[i + 1];
+		}
+
+		if (vertices[i+2] < minZ){
+			minZ = vertices[i + 2];
+		}
+		if (vertices[i+2] > maxZ){
+			maxZ = vertices[i + 2];
+		}
+		i += 3;
+	}
 }
 
 void Sphere::render(){

@@ -16,6 +16,7 @@ class Mesh
 {
 	int faceCount;
 public:
+	GLfloat maxX, minX, maxY, minY, maxZ, minZ;
 	int verticesCount;
 	Vector3D *normals;
 	Vector3D *vertices;
@@ -29,6 +30,7 @@ public:
 	void bindDiffuseTexture();
 	int getFaceCount(){ return faceCount; };
 	void setFaceCount(int count){ faceCount = count; };
+	void setBundingBox();
 	~Mesh();
 };
 
