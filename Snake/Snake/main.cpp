@@ -39,6 +39,7 @@ skybox* sky;
 world* wor;
 Model obj;
 snake* sn;
+GLboolean isWired = false;
 
 
 ofstream logFile;
@@ -62,7 +63,12 @@ void reshape(int w, int h){
 void render(){
 	// Vymaz (vypln) obrazovku a z-buffer definovanymi hodnotami
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
+	if (isWired){
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	}
+	else{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
 	// Nastav modelview maticu (transformaciu) na jednotkovu maticu
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -101,7 +107,7 @@ void render(){
 	glPopMatrix();
 	render2DTextFT(10, 45, "F1 - zapni/vypni animaciu");
 	render3DTextGLUT(6, 0, 2, 0.01, GLUT_STROKE_ROMAN, "Projekt OpenGL - GLUT 3D text");
-	
+
 	sn->render();
 
 	glColor3f(1, 1, 1);
@@ -109,14 +115,11 @@ void render(){
 	glPushMatrix();
 	glTranslatef(-2, 0.3, 0);
 	glRotatef(90, 0, 0, 1);
-	glScalef(0.005, 0.005, 0.005);
+	//glScalef(0.005, 0.005, 0.005);
 	obj.render();
 	obj.renderBoundingBox();
 
 	glPopMatrix();
-
-	
-
 
 
 	logFile << obj.getCollision(sn->bod1.x, sn->bod1.y, sn->bod1.z) << " " << endl;
@@ -124,7 +127,7 @@ void render(){
 	logFile << sn->bod1.x << " " << sn->bod1.y << " " << sn->bod1.z << endl;
 	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
 	logFile << "------------------------------------------------" << endl;
-	
+
 	logFile << obj.getCollision(sn->bod2.x, sn->bod2.y, sn->bod2.z) << " " << endl;
 	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
 	logFile << sn->bod2.x << " " << sn->bod2.y << " " << sn->bod2.z << endl;
@@ -472,13 +475,15 @@ void keyboard(unsigned char key, int x, int y){
 	case 27:
 		exit(0);
 		break;
+	case 'w':
+		isWired = !isWired;
 	default:
 		break;
 	}
 }
 
 void special_keys(int a_keys, int x, int y){
-	sn->addSphere();
+	//sn->addSphere();
 	switch (a_keys){
 	case GLUT_KEY_DOWN:
 		if (up){
@@ -550,9 +555,9 @@ int main(int argc, char** argv){
 	ObjectLoader loader = ObjectLoader();
 	sky = new skybox();
 	wor = new world();
-	//loader.loadModel("hulk/hulk.obj");
+	loader.loadModel("hulk/hulk.obj");
 	//loader.loadModel("mountain/Mountain Dew Code Red soda can.obj");
-	loader.loadModel("apple/Apple.obj");
+	//loader.loadModel("apple/app.obj");
 	obj = loader.getModel();
 	shaderLoader* sl = new shaderLoader();
 	shaders_envmap = sl->loadProgram("shaders/perpixel_envmap.vert", "shaders/perpixel_envmap.frag");
