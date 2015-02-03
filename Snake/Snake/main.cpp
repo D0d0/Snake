@@ -522,7 +522,8 @@ int main(int argc, char** argv){
 	sky = new skybox();
 	wor = new world();
 
-	loader.loadModel("hulk/hulk.obj");
+	//loader.loadModel("mountain/Mountain Dew Code Red soda can.obj");
+	loader.loadModel("Apple/apple.obj");
 	obj = loader.getModel();
 	shaderLoader* sl = new shaderLoader();
 	shaders_envmap = sl->loadProgram("shaders/perpixel_envmap.vert", "shaders/perpixel_envmap.frag");
