@@ -40,6 +40,7 @@ world* wor;
 Model obj;
 snake* sn;
 GLboolean isWired = false;
+Model wall;
 
 
 ofstream logFile;
@@ -111,36 +112,31 @@ void render(){
 	sn->render();
 
 	glColor3f(1, 1, 1);
-
+	/*
 	glPushMatrix();
 	glTranslatef(-2, 0, 0);
 	glRotatef(90, 0, 0, 1);
 	//glScalef(0.005, 0.005, 0.005);
 	obj.render();
-	obj.renderBoundingBox();
-
-	glPopMatrix();
-
-
-	logFile << obj.getCollision(sn->bod1.x, sn->bod1.y, sn->bod1.z) << " " << endl;
+	logFile << obj.getCollision(sn->bod1.x, sn->bod1.y, sn->bod1.z, sn->getWall()) << " " << endl;
 	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
 	logFile << sn->bod1.x << " " << sn->bod1.y << " " << sn->bod1.z << endl;
 	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
 	logFile << "------------------------------------------------" << endl;
 
-	logFile << obj.getCollision(sn->bod2.x, sn->bod2.y, sn->bod2.z) << " " << endl;
+	logFile << obj.getCollision(sn->bod2.x, sn->bod2.y, sn->bod2.z, sn->getWall()) << " " << endl;
 	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
 	logFile << sn->bod2.x << " " << sn->bod2.y << " " << sn->bod2.z << endl;
 	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
 	logFile << "------------------------------------------------" << endl;
 
-	logFile << obj.getCollision(sn->bod3.x, sn->bod3.y, sn->bod3.z) << " " << endl;
+	logFile << obj.getCollision(sn->bod3.x, sn->bod3.y, sn->bod3.z, sn->getWall()) << " " << endl;
 	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
 	logFile << sn->bod3.x << " " << sn->bod3.y << " " << sn->bod3.z << endl;
 	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
 	logFile << "------------------------------------------------" << endl;
 
-	logFile << obj.getCollision(sn->bod4.x, sn->bod4.y, sn->bod4.z) << " " << endl;
+	logFile << obj.getCollision(sn->bod4.x, sn->bod4.y, sn->bod4.z, sn->getWall()) << " " << endl;
 	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
 	logFile << sn->bod4.x << " " << sn->bod4.y << " " << sn->bod4.z << endl;
 	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
@@ -148,31 +144,212 @@ void render(){
 
 
 
-	logFile << obj.getCollision(sn->bod5.x, sn->bod5.y, sn->bod5.z) << " " << endl;
+	logFile << obj.getCollision(sn->bod5.x, sn->bod5.y, sn->bod5.z, sn->getWall()) << " " << endl;
 	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
 	logFile << sn->bod5.x << " " << sn->bod5.y << " " << sn->bod5.z << endl;
 	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
 	logFile << "------------------------------------------------" << endl;
 
-	logFile << obj.getCollision(sn->bod6.x, sn->bod6.y, sn->bod6.z) << " " << endl;
+	logFile << obj.getCollision(sn->bod6.x, sn->bod6.y, sn->bod6.z, sn->getWall()) << " " << endl;
 	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
 	logFile << sn->bod6.x << " " << sn->bod6.y << " " << sn->bod6.z << endl;
 	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
 	logFile << "------------------------------------------------" << endl;
 
-	logFile << obj.getCollision(sn->bod7.x, sn->bod7.y, sn->bod7.z) << " " << endl;
+	logFile << obj.getCollision(sn->bod7.x, sn->bod7.y, sn->bod7.z, sn->getWall()) << " " << endl;
 	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
 	logFile << sn->bod7.x << " " << sn->bod7.y << " " << sn->bod7.z << endl;
 	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
 	logFile << "------------------------------------------------" << endl;
 
-	logFile << obj.getCollision(sn->bod8.x, sn->bod8.y, sn->bod8.z) << " " << endl;
+	logFile << obj.getCollision(sn->bod8.x, sn->bod8.y, sn->bod8.z, sn->getWall()) << " " << endl;
 	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
 	logFile << sn->bod8.x << " " << sn->bod8.y << " " << sn->bod8.z << endl;
 	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
 	logFile << "------------------------------------------------" << endl;
+	obj.renderBoundingBox();
+
+	glPopMatrix();
 
 
+
+	glPushMatrix();
+	glTranslatef(2, 0, 0);
+	glRotatef(-90, 0, 0, 1);
+	//glScalef(0.005, 0.005, 0.005);
+	obj.render();
+	logFile << obj.getCollision(sn->bod1.x, sn->bod1.y, sn->bod1.z, sn->getWall()) << " " << endl;
+	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod1.x << " " << sn->bod1.y << " " << sn->bod1.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;
+
+	logFile << obj.getCollision(sn->bod2.x, sn->bod2.y, sn->bod2.z, sn->getWall()) << " " << endl;
+	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod2.x << " " << sn->bod2.y << " " << sn->bod2.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;
+
+	logFile << obj.getCollision(sn->bod3.x, sn->bod3.y, sn->bod3.z, sn->getWall()) << " " << endl;
+	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod3.x << " " << sn->bod3.y << " " << sn->bod3.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;
+
+	logFile << obj.getCollision(sn->bod4.x, sn->bod4.y, sn->bod4.z, sn->getWall()) << " " << endl;
+	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod4.x << " " << sn->bod4.y << " " << sn->bod4.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;
+
+
+
+	logFile << obj.getCollision(sn->bod5.x, sn->bod5.y, sn->bod5.z, sn->getWall()) << " " << endl;
+	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod5.x << " " << sn->bod5.y << " " << sn->bod5.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;
+
+	logFile << obj.getCollision(sn->bod6.x, sn->bod6.y, sn->bod6.z, sn->getWall()) << " " << endl;
+	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod6.x << " " << sn->bod6.y << " " << sn->bod6.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;
+
+	logFile << obj.getCollision(sn->bod7.x, sn->bod7.y, sn->bod7.z, sn->getWall()) << " " << endl;
+	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod7.x << " " << sn->bod7.y << " " << sn->bod7.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;
+
+	logFile << obj.getCollision(sn->bod8.x, sn->bod8.y, sn->bod8.z, sn->getWall()) << " " << endl;
+	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod8.x << " " << sn->bod8.y << " " << sn->bod8.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;
+	obj.renderBoundingBox();
+
+	glPopMatrix();
+
+	*/
+
+
+	glPushMatrix();
+	glTranslatef(0, 0, -1.9);
+	glRotatef(90, -90, 0, 1);
+	//glScalef(0.005, 0.005, 0.005);
+	obj.render();
+	logFile << obj.getCollision(sn->bod1.x, sn->bod1.y, sn->bod1.z, sn->getWall()) << " " << endl;
+	/*logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod1.x << " " << sn->bod1.y << " " << sn->bod1.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;*/
+
+	logFile << obj.getCollision(sn->bod2.x, sn->bod2.y, sn->bod2.z, sn->getWall()) << " " << endl;
+	/*logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod2.x << " " << sn->bod2.y << " " << sn->bod2.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;*/
+
+	logFile << obj.getCollision(sn->bod3.x, sn->bod3.y, sn->bod3.z, sn->getWall()) << " " << endl;
+	/*logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod3.x << " " << sn->bod3.y << " " << sn->bod3.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;*/
+
+	logFile << obj.getCollision(sn->bod4.x, sn->bod4.y, sn->bod4.z, sn->getWall()) << " " << endl;
+	/*logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod4.x << " " << sn->bod4.y << " " << sn->bod4.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;*/
+
+
+
+	logFile << obj.getCollision(sn->bod5.x, sn->bod5.y, sn->bod5.z, sn->getWall()) << " " << endl;
+	/*logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod5.x << " " << sn->bod5.y << " " << sn->bod5.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;*/
+
+	logFile << obj.getCollision(sn->bod6.x, sn->bod6.y, sn->bod6.z, sn->getWall()) << " " << endl;
+	/*logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod6.x << " " << sn->bod6.y << " " << sn->bod6.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;*/
+
+	logFile << obj.getCollision(sn->bod7.x, sn->bod7.y, sn->bod7.z, sn->getWall()) << " " << endl;
+	/*logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod7.x << " " << sn->bod7.y << " " << sn->bod7.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;*/
+
+	logFile << obj.getCollision(sn->bod8.x, sn->bod8.y, sn->bod8.z, sn->getWall()) << " " << endl;
+	/*logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
+	logFile << sn->bod8.x << " " << sn->bod8.y << " " << sn->bod8.z << endl;
+	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;*/
+	obj.renderBoundingBox();
+
+
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(2, 0, 0);
+	glRotatef(-90, 0, 0, 1);
+	//glScalef(0.005, 0.005, 0.005);
+	wall.render();
+	logFile << wall.getCollision(sn->bod1.x, sn->bod1.y, sn->bod1.z, sn->getWall()) << " " << endl;
+	/*logFile << wall.bod1.x << " " << wall.bod1.y << " " << wall.bod1.z << endl;
+	logFile << sn->bod1.x << " " << sn->bod1.y << " " << sn->bod1.z << endl;
+	logFile << wall.bod8.x << " " << wall.bod8.y << " " << wall.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;*/
+
+	logFile << wall.getCollision(sn->bod2.x, sn->bod2.y, sn->bod2.z, sn->getWall()) << " " << endl;
+	/*logFile << wall.bod1.x << " " << wall.bod1.y << " " << wall.bod1.z << endl;
+	logFile << sn->bod2.x << " " << sn->bod2.y << " " << sn->bod2.z << endl;
+	logFile << wall.bod8.x << " " << wall.bod8.y << " " << wall.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;*/
+
+	logFile << wall.getCollision(sn->bod3.x, sn->bod3.y, sn->bod3.z, sn->getWall()) << " " << endl;
+	/*logFile << wall.bod1.x << " " << wall.bod1.y << " " << wall.bod1.z << endl;
+	logFile << sn->bod3.x << " " << sn->bod3.y << " " << sn->bod3.z << endl;
+	logFile << wall.bod8.x << " " << wall.bod8.y << " " << wall.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;*/
+
+	logFile << wall.getCollision(sn->bod4.x, sn->bod4.y, sn->bod4.z, sn->getWall()) << " " << endl;
+	/*logFile << wall.bod1.x << " " << wall.bod1.y << " " << wall.bod1.z << endl;
+	logFile << sn->bod4.x << " " << sn->bod4.y << " " << sn->bod4.z << endl;
+	logFile << wall.bod8.x << " " << wall.bod8.y << " " << wall.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;*/
+
+
+
+	logFile << wall.getCollision(sn->bod5.x, sn->bod5.y, sn->bod5.z, sn->getWall()) << " " << endl;
+	/*logFile << wall.bod1.x << " " << wall.bod1.y << " " << wall.bod1.z << endl;
+	logFile << sn->bod5.x << " " << sn->bod5.y << " " << sn->bod5.z << endl;
+	logFile << wall.bod8.x << " " << wall.bod8.y << " " << wall.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;*/
+
+	logFile << wall.getCollision(sn->bod6.x, sn->bod6.y, sn->bod6.z, sn->getWall()) << " " << endl;
+	/*logFile << wall.bod1.x << " " << wall.bod1.y << " " << wall.bod1.z << endl;
+	logFile << sn->bod6.x << " " << sn->bod6.y << " " << sn->bod6.z << endl;
+	logFile << wall.bod8.x << " " << wall.bod8.y << " " << wall.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;*/
+
+	logFile << wall.getCollision(sn->bod7.x, sn->bod7.y, sn->bod7.z, sn->getWall()) << " " << endl;
+	/*logFile << wall.bod1.x << " " << wall.bod1.y << " " << wall.bod1.z << endl;
+	logFile << sn->bod7.x << " " << sn->bod7.y << " " << sn->bod7.z << endl;
+	logFile << wall.bod8.x << " " << wall.bod8.y << " " << wall.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;*/
+
+	logFile << wall.getCollision(sn->bod8.x, sn->bod8.y, sn->bod8.z, sn->getWall()) << " " << endl;
+	/*logFile << wall.bod1.x << " " << wall.bod1.y << " " << wall.bod1.z << endl;
+	logFile << sn->bod8.x << " " << sn->bod8.y << " " << sn->bod8.z << endl;
+	logFile << wall.bod8.x << " " << wall.bod8.y << " " << wall.bod8.z << endl;
+	logFile << "------------------------------------------------" << endl;*/
+	wall.renderBoundingBox();
+
+	glPopMatrix();
 
 
 	glutSwapBuffers();
@@ -559,6 +736,8 @@ int main(int argc, char** argv){
 	//loader.loadModel("mountain/Mountain Dew Code Red soda can.obj");
 	loader.loadModel("apple/app.obj");
 	obj = loader.getModel();
+	loader.loadModel("wall/grade.obj");
+	wall = loader.getModel();
 	shaderLoader* sl = new shaderLoader();
 	shaders_envmap = sl->loadProgram("shaders/perpixel_envmap.vert", "shaders/perpixel_envmap.frag");
 	sl->SetShaderUniform1i(shaders_envmap, "color_texture", 0);

@@ -25,7 +25,7 @@ public:
 	void render();
 	void renderBoundingBox();
 	void addMesh(Mesh mesh){ meshes.push_back(mesh); };
-	bool getCollision(GLfloat x, GLfloat y, GLfloat z);
+	bool getCollision(GLfloat x, GLfloat y, GLfloat z, GLint wall);
 	~Model();
 };
 

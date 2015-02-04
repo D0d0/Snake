@@ -141,6 +141,7 @@ void Model::renderBoundingBox(){
 	glVertex3f(minX, maxY, maxZ);
 	glVertex3f(minX, maxY, minZ);
 	glEnd();
+	glColor3f(1, 1, 1);
 
 }
 
@@ -158,19 +159,38 @@ void Model::calculatePoints(){
 }
 
 
-bool Model::getCollision(GLfloat x, GLfloat y, GLfloat z){
+bool Model::getCollision(GLfloat x, GLfloat y, GLfloat z, GLint wall){
 	if (bod1.x >= x && bod8.x <= x && bod1.y <= y && bod8.y >= y && bod1.z <= z && bod8.z >= z){
-		cout << "kolizia" << endl;
+		cout << "kolizia1" << endl;
 	}
-/*	if (bod1.x <= x && bod8.x >= x){
+	if (bod1.x <= x && bod8.x >= x && bod1.y <= y && bod8.y >= y && bod1.z >= z && bod8.z <= z){
+		cout << "kolizia2" << endl;
+	}
+	if (bod1.x <= x && bod8.x >= x && bod1.y >= y && bod8.y <= y && bod1.z <= z && bod8.z >= z){
+		cout << "kolizia3" << endl;
+	}
+	/*if (bod1.x >= x && bod8.x <= x){
 		cout << "x" << endl;
 	}
-	if (bod1.y <= y && bod8.y >= y){
+	if (bod1.y <= y && bod8.y <= y){
 		cout << "y" << endl;
 	}
 	if (bod1.z <= z && bod8.z >= z){
 		cout << "z" << endl;
 	}
 	cout << "-----------------" << endl;*/
-	return bod1.x >= x && bod8.x <= x && bod1.y <= y && bod8.y >= y && bod1.z <= z && bod8.z >= z;
+	if (wall == 0 || wall == 2 || wall == 4){
+		return bod1.x >= x && bod8.x <= x && bod1.y <= y && bod8.y >= y && bod1.z <= z && bod8.z >= z;
+	}
+	if (wall == 1){
+		return bod1.x <= x && bod8.x >= x && bod1.y >= y && bod8.y <= y && bod1.z <= z && bod8.z >= z;
+	}
+	//??
+	if (wall == 3){
+		return bod1.x >= x && bod8.x <= x && bod1.y <= y && bod8.y <= y && bod1.z <= z && bod8.z >= z;
+	}
+	if ( wall == 5){
+		return bod1.x <= x && bod8.x >= x && bod1.y <= y && bod8.y >= y && bod1.z >= z && bod8.z <= z;
+	}
+	return false;
 }
