@@ -113,7 +113,7 @@ void render(){
 	glColor3f(1, 1, 1);
 
 	glPushMatrix();
-	glTranslatef(-2, 0.3, 0);
+	glTranslatef(-2, 0, 0);
 	glRotatef(90, 0, 0, 1);
 	//glScalef(0.005, 0.005, 0.005);
 	obj.render();
@@ -555,9 +555,9 @@ int main(int argc, char** argv){
 	ObjectLoader loader = ObjectLoader();
 	sky = new skybox();
 	wor = new world();
-	loader.loadModel("hulk/hulk.obj");
+	//loader.loadModel("hulk/hulk.obj");
 	//loader.loadModel("mountain/Mountain Dew Code Red soda can.obj");
-	//loader.loadModel("apple/app.obj");
+	loader.loadModel("apple/app.obj");
 	obj = loader.getModel();
 	shaderLoader* sl = new shaderLoader();
 	shaders_envmap = sl->loadProgram("shaders/perpixel_envmap.vert", "shaders/perpixel_envmap.frag");
