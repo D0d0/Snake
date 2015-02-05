@@ -105,10 +105,6 @@ void Sphere::renderBoundingBox(){
 	glVertex3f(maxX, maxY, minZ);
 	glEnd();
 
-
-
-
-
 	glBegin(GL_LINES);
 	glVertex3f(maxX, maxY, minZ);
 	glVertex3f(maxX, minY, minZ);
@@ -140,9 +136,7 @@ void Sphere::renderBoundingBox(){
 	glVertex3f(minX, maxY, minZ);
 	glEnd();
 
-
-
-
+	glColor3f(1, 1, 1);
 }
 
 

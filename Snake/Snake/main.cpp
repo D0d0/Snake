@@ -26,21 +26,19 @@
 using namespace Assimp;
 using namespace std;
 
-GLuint  shaders_envmap;
+GLuint  shaders_envmap, shaders_perpixel_phong;
+GLfloat sun_rotation = 0.0f;
 GLdouble vzd, old_vzd, fi, xi, old_fi, old_xi;
 GLint left_mouse_down_x, left_mouse_down_y;
 GLint right_mouse_down_y;
 GLboolean right_down = false, left_down = false;
-GLboolean up = true;
-GLboolean down = false;
-GLboolean righ = false;
-GLboolean lef = false;
 skybox* sky;
 world* wor;
 Model obj;
 snake* sn;
 GLboolean isWired = false;
 Model wall;
+Sphere* slnko;
 
 
 ofstream logFile;
@@ -70,6 +68,7 @@ void render(){
 	else{
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
+	glUseProgram(0);
 	// Nastav modelview maticu (transformaciu) na jednotkovu maticu
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -100,7 +99,9 @@ void render(){
 	// skybox je dany vo svetovych suradniciach, akurat jeho stred je stale v bode, kdeje kamera
 	sky->render();
 	//vykresli kocku
+
 	wor->render();
+
 	glPushMatrix();
 	glScalef(0.1f, 0.1f, 0.1f);
 	glRotatef(90, 1.0f, 0, 0);
@@ -233,12 +234,11 @@ void render(){
 
 	*/
 
-
 	glPushMatrix();
 	glTranslatef(0, 0, -1.9);
 	glRotatef(90, -90, 0, 1);
 	//glScalef(0.005, 0.005, 0.005);
-	obj.render();
+	//obj.render();
 	logFile << obj.getCollision(sn->bod1.x, sn->bod1.y, sn->bod1.z, sn->getWall()) << " " << endl;
 	/*logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
 	logFile << sn->bod1.x << " " << sn->bod1.y << " " << sn->bod1.z << endl;
@@ -288,16 +288,14 @@ void render(){
 	logFile << sn->bod8.x << " " << sn->bod8.y << " " << sn->bod8.z << endl;
 	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
 	logFile << "------------------------------------------------" << endl;*/
-	obj.renderBoundingBox();
-
-
+	//obj.renderBoundingBox();
 	glPopMatrix();
 
 	glPushMatrix();
 	glTranslatef(2, 0, 0);
 	glRotatef(-90, 0, 0, 1);
 	//glScalef(0.005, 0.005, 0.005);
-	wall.render();
+	//wall.render();
 	logFile << wall.getCollision(sn->bod1.x, sn->bod1.y, sn->bod1.z, sn->getWall()) << " " << endl;
 	/*logFile << wall.bod1.x << " " << wall.bod1.y << " " << wall.bod1.z << endl;
 	logFile << sn->bod1.x << " " << sn->bod1.y << " " << sn->bod1.z << endl;
@@ -347,7 +345,7 @@ void render(){
 	logFile << sn->bod8.x << " " << sn->bod8.y << " " << sn->bod8.z << endl;
 	logFile << wall.bod8.x << " " << wall.bod8.y << " " << wall.bod8.z << endl;
 	logFile << "------------------------------------------------" << endl;*/
-	wall.renderBoundingBox();
+	//wall.renderBoundingBox();
 
 	glPopMatrix();
 
@@ -378,17 +376,6 @@ bool init(void)
 	// initializuj kameru
 	fi = 0.7f; xi = 0.7f; vzd = 10.0f;
 
-	// initializuje svetlo
-	GLfloat light_ambient[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	GLfloat light_diffuse[] = { 0.9f, 0.9f, 0.9f, 1.0f };
-	GLfloat light_specular[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-	glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 1.0);
-	glEnable(GL_LIGHT0);
-
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 	// parametre hmly
 	glFogi(GL_FOG_MODE, GL_EXP2);
@@ -399,8 +386,10 @@ bool init(void)
 	glFogf(GL_FOG_START, 3.0f);
 	glFogf(GL_FOG_END, 20.0f);
 	//glEnable(GL_FOG);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	return true;
 }
+
 
 // Procedura obsluhujuca stlacenie tlacitka mysi
 void mouse_klik(int button, int state, int x, int y){
@@ -455,194 +444,8 @@ void mouse_move(int x, int y){
 
 void timer(int a){
 	//cout << sn->getWall() << endl;
-	switch (sn->getWall()){
-	case 0:
-		if (righ){
-			sn->posunY += 0.005f;
-		}
-		if (lef){
-			sn->posunY -= 0.005f;
-		}
-		if (up){
-			sn->posunZ += 0.005f;
-		}
-		if (down){
-			sn->posunZ -= 0.005f;
-		}
-		if (sn->posunZ >= 2.1f){
-			sn->setWall(1);
-		}
-		if (sn->posunZ <= -2.1f){
-			sn->setWall(3);
-			down = false;
-			up = true;
-		}
-		if (sn->posunY >= 2.1f){
-			sn->setWall(4);
-		}
-		if (sn->posunY <= -2.1f){
-			sn->setWall(5);
-		}
-		break;
-	case 1:
-		if (righ){
-			sn->posunY += 0.005f;
-		}
-		if (lef){
-			sn->posunY -= 0.005f;
-		}
-		if (up){
-			sn->posunX -= 0.005f;
-		}
-		if (down){
-			sn->posunX += 0.005f;
-		}
-		if (sn->posunX <= -2.1f){
-			sn->setWall(2);
-			up = false;
-			down = true;
-		}
-		if (sn->posunX >= 2.1f){
-			sn->setWall(0);
-		}
-		if (sn->posunY >= 2.1f){
-			sn->setWall(4);
-			righ = false;
-			down = true;
-		}
-		if (sn->posunY <= -2.1f){
-			sn->setWall(5);
-			lef = false;
-			down = true;
-		}
-		break;
-	case 2:
-		if (righ){
-			sn->posunY -= 0.005f;
-		}
-		if (lef){
-			sn->posunY += 0.005f;
-		}
-		if (up){
-			sn->posunZ += 0.005f;
-		}
-		if (down){
-			sn->posunZ -= 0.005f;
-		}
-		if (sn->posunZ <= -2.1f){
-			sn->setWall(3);
-		}
-		if (sn->posunZ >= 2.1f){
-			sn->setWall(1);
-			up = false;
-			down = true;
-		}
-		if (sn->posunY <= -2.1f){
-			sn->setWall(5);
-		}
-		if (sn->posunY >= 2.1f){
-			sn->setWall(4);
-		}
-		break;
-	case 3:
-		if (righ){
-			sn->posunY += 0.005f;
-		}
-		if (lef){
-			sn->posunY -= 0.005f;
-		}
-		if (up){
-			sn->posunX -= 0.005f;
-		}
-		if (down){
-			sn->posunX += 0.005f;
-		}
-		if (sn->posunX >= 2.1f){
-			sn->setWall(0);
-			up = true;
-			down = false;
-		}
-		if (sn->posunX <= -2.1f){
-			sn->setWall(2);
-		}
-
-		/////
-		if (sn->posunY <= -2.1f){
-			sn->setWall(5);
-			lef = false;
-			up = true;
-		}
-		if (sn->posunY >= 2.1f){
-			sn->setWall(4);
-			righ = false;
-			down = true;
-		}
-
-		///// po tadeto je nieco zle
-		break;
-	case 4:
-		if (righ){
-			sn->posunX -= 0.005f;
-		}
-		if (lef){
-			sn->posunX += 0.005f;
-		}
-		if (up){
-			sn->posunZ += 0.005f;
-		}
-		if (down){
-			sn->posunZ -= 0.005f;
-		}
-		if (sn->posunZ >= 2.1f){
-			sn->setWall(1);
-			up = false;
-			lef = true;
-		}
-		if (sn->posunZ <= -2.1f){
-			sn->setWall(1);
-			down = false;
-			lef = true;
-		}
-		if (sn->posunX >= 2.1f){
-			sn->setWall(0);
-		}
-		if (sn->posunX <= -2.1f){
-			sn->setWall(2);
-		}
-		break;
-	case 5:
-		if (righ){
-			sn->posunX += 0.005f;
-		}
-		if (lef){
-			sn->posunX -= 0.005f;
-		}
-		if (up){
-			sn->posunZ += 0.005f;
-		}
-		if (down){
-			sn->posunZ -= 0.005f;
-		}
-		if (sn->posunZ >= 2.1f){
-			sn->setWall(1);
-			up = false;
-			righ = true;
-		}
-		if (sn->posunZ <= -2.1f){
-			sn->setWall(3);
-			down = false;
-			righ = true;
-		}
-		if (sn->posunX >= 2.1f){
-			sn->setWall(0);
-		}
-		if (sn->posunX <= -2.1f){
-			sn->setWall(2);
-		}
-		break;
-	default:
-		break;
-	}
+	sun_rotation += 0.5f;
+	sn->posun();
 	glutPostRedisplay();
 	glutTimerFunc(10, timer, a);
 }
@@ -661,48 +464,7 @@ void keyboard(unsigned char key, int x, int y){
 
 void special_keys(int a_keys, int x, int y){
 	//sn->addSphere();
-	switch (a_keys){
-	case GLUT_KEY_DOWN:
-		if (up){
-			return;
-		}
-		up = false;
-		righ = false;
-		down = true;
-		lef = false;
-		glutPostRedisplay();
-		break;
-	case GLUT_KEY_UP:
-		if (down){
-			return;
-		}
-		up = true;
-		righ = false;
-		down = false;
-		lef = false;
-		glutPostRedisplay();
-		break;
-	case GLUT_KEY_LEFT:
-		if (righ){
-			return;
-		}
-		up = false;
-		righ = false;
-		down = false;
-		lef = true;
-		break;
-	case GLUT_KEY_RIGHT:
-		if (lef){
-			return;
-		}
-		up = false;
-		righ = true;
-		down = false;
-		lef = false;
-		break;
-	default:
-		break;
-	}
+	sn->setDirection(a_keys);
 }
 
 
@@ -742,6 +504,13 @@ int main(int argc, char** argv){
 	shaders_envmap = sl->loadProgram("shaders/perpixel_envmap.vert", "shaders/perpixel_envmap.frag");
 	sl->SetShaderUniform1i(shaders_envmap, "color_texture", 0);
 	sl->SetShaderUniform1i(shaders_envmap, "cubemap_texture", 1);
+
+	shaders_perpixel_phong = sl->loadProgram("shaders/perpixel_phong.vert", "shaders/perpixel_phong.frag");
+	int locationTexture = glGetUniformLocation(shaders_perpixel_phong, "color_texture");
+	glUniform1i(locationTexture, 0);
+	glActiveTexture(GL_TEXTURE0);
+
+	slnko = new Sphere(32, 32);
 
 	glutDisplayFunc(render);
 	glutReshapeFunc(reshape);
