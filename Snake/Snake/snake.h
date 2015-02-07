@@ -40,10 +40,11 @@ class snake
 	GLboolean lef = false;
 	Vector3D* rotation;
 	GLfloat rotation_angle = 180;
-	void addBody(GLint dir);
+	void addBody();
 	GLboolean rotate_more = false;
 	Body secondRotation;
 	void nullSecondrotation();
+	void calculateRotations();
 public:
 	vec4 bod1, bod2, bod3, bod4, bod5, bod6, bod7, bod8;
 	GLfloat posunX = 2.1f;

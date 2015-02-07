@@ -35,7 +35,7 @@ void snake::setDirection(GLint dir){
 			return;
 		}
 		if (dir >= 100 && dir <= 103){
-			addBody(dir);
+			addBody();
 		}
 		up = false;
 		righ = false;
@@ -48,7 +48,7 @@ void snake::setDirection(GLint dir){
 			return;
 		}
 		if (dir >= 100 && dir <= 103){
-			addBody(dir);
+			addBody();
 		}
 		up = true;
 		righ = false;
@@ -61,7 +61,7 @@ void snake::setDirection(GLint dir){
 			return;
 		}
 		if (dir >= 100 && dir <= 103){
-			addBody(dir);
+			addBody();
 		}
 		up = false;
 		righ = false;
@@ -73,7 +73,7 @@ void snake::setDirection(GLint dir){
 			return;
 		}
 		if (dir >= 100 && dir <= 103){
-			addBody(dir);
+			addBody();
 		}
 		up = false;
 		righ = true;
@@ -85,7 +85,202 @@ void snake::setDirection(GLint dir){
 	}
 }
 
-void snake::addBody(GLint dir){
+void snake::calculateRotations(){
+	if (down){
+		if (getWall() == 0){
+			rotation_angle = -180;
+			rotation->setX(0.0f);
+			rotation->setY(1.0f);
+			rotation->setZ(0.0f);
+			secondRotation.second_rotation_angle = 180;
+			secondRotation.second_rotation->setX(1);
+			secondRotation.second_rotation->setY(0);
+			secondRotation.second_rotation->setZ(0);
+		}
+		if (getWall() == 1){
+			rotation_angle = -90;
+			rotation->setX(0.0f);
+			rotation->setY(1.0f);
+			rotation->setZ(0.0f);
+			nullSecondrotation();
+		}
+		if (getWall() == 2){
+			rotation_angle = -180;
+			rotation->setX(0.0f);
+			rotation->setY(1.0f);
+			rotation->setZ(0.0f);
+			secondRotation.second_rotation_angle = 180;
+			secondRotation.second_rotation->setX(1);
+			secondRotation.second_rotation->setY(0);
+			secondRotation.second_rotation->setZ(0);
+		}
+		if (getWall() == 3){
+			rotation_angle = -90;
+			rotation->setX(0.0f);
+			rotation->setY(1.0f);
+			rotation->setZ(0.0f);
+			nullSecondrotation();
+		}
+		if (getWall() == 4){
+			rotation_angle = 180;
+			rotation->setX(1.0f);
+			rotation->setY(0.0f);
+			rotation->setZ(0.0f);
+			secondRotation.second_rotation_angle = 180;
+			secondRotation.second_rotation->setX(1);
+			secondRotation.second_rotation->setY(0);
+			secondRotation.second_rotation->setZ(0);
+		}
+		if (getWall() == 5){
+			rotation_angle = 180;
+			rotation->setX(1.0f);
+			rotation->setY(0.0f);
+			rotation->setZ(0.0f);
+			secondRotation.second_rotation_angle = 180;
+			secondRotation.second_rotation->setX(1);
+			secondRotation.second_rotation->setY(0);
+			secondRotation.second_rotation->setZ(0);
+		}
+		return;
+	}
+	if (up){
+		if (getWall() == 0){
+			rotation_angle = 180;
+			rotation->setX(0.0f);
+			rotation->setY(1.0f);
+			rotation->setZ(0.0f);
+			nullSecondrotation();
+		}
+		if (getWall() == 1){
+			rotation_angle = 90;
+			rotation->setX(0.0f);
+			rotation->setY(1.0f);
+			rotation->setZ(0.0f);
+			nullSecondrotation();
+		}
+		if (getWall() == 2){
+			rotation_angle = 180;
+			rotation->setX(0.0f);
+			rotation->setY(1.0f);
+			rotation->setZ(0.0f);
+			nullSecondrotation();
+		}
+		if (getWall() == 3){
+			rotation_angle = 90;
+			rotation->setX(0.0f);
+			rotation->setY(1.0f);
+			rotation->setZ(0.0f);
+			nullSecondrotation();
+		}
+		if (getWall() == 4){
+			rotation_angle = 180;
+			rotation->setX(1.0f);
+			rotation->setY(0.0f);
+			rotation->setZ(0.0f);
+			nullSecondrotation();
+		}
+		if (getWall() == 5){
+			rotation_angle = -180;
+			rotation->setX(1.0f);
+			rotation->setY(0.0f);
+			rotation->setZ(0.0f);
+			nullSecondrotation();
+		}
+		return;
+	}
+	if (lef){
+		if (getWall() == 0){
+			rotation_angle = -90;
+			rotation->setX(1.0f);
+			rotation->setY(0.0f);
+			rotation->setZ(0.0f);
+			nullSecondrotation();
+		}
+		if (getWall() == 1){
+			rotation_angle = -90;
+			rotation->setX(1.0f);
+			rotation->setY(0.0f);
+			rotation->setZ(0.0f);
+			nullSecondrotation();
+		}
+		if (getWall() == 2){
+			rotation_angle = 90;
+			rotation->setX(1.0f);
+			rotation->setY(0.0f);
+			rotation->setZ(0.0f);
+			nullSecondrotation();
+		}
+		if (getWall() == 3){
+			rotation_angle = -90;
+			rotation->setX(1.0f);
+			rotation->setY(0.0f);
+			rotation->setZ(0.0f);
+			nullSecondrotation();
+		}
+		if (getWall() == 4){
+			rotation_angle = -90;
+			rotation->setX(0.0f);
+			rotation->setY(1.0f);
+			rotation->setZ(0.0f);
+			nullSecondrotation();
+		}
+		if (getWall() == 5){
+			rotation_angle = 90;
+			rotation->setX(0.0f);
+			rotation->setY(1.0f);
+			rotation->setZ(0.0f);
+			nullSecondrotation();
+		}
+		return;
+	}
+	if (righ){
+		if (getWall() == 0){
+			rotation_angle = 90;
+			rotation->setX(1.0f);
+			rotation->setY(0.0f);
+			rotation->setZ(0.0f);
+			nullSecondrotation();
+		}
+		if (getWall() == 1){
+			rotation_angle = 90;
+			rotation->setX(1.0f);
+			rotation->setY(0.0f);
+			rotation->setZ(0.0f);
+			nullSecondrotation();
+		}
+		if (getWall() == 2){
+			rotation_angle = -90;
+			rotation->setX(1.0f);
+			rotation->setY(0.0f);
+			rotation->setZ(0.0f);
+			nullSecondrotation();
+		}
+		if (getWall() == 3){
+			rotation_angle = 90;
+			rotation->setX(1.0f);
+			rotation->setY(0.0f);
+			rotation->setZ(0.0f);
+			nullSecondrotation();
+		}
+		if (getWall() == 4){
+			rotation_angle = 90;
+			rotation->setX(0.0f);
+			rotation->setY(1.0f);
+			rotation->setZ(0.0f);
+			nullSecondrotation();
+		}
+		if (getWall() == 5){
+			rotation_angle = -90;
+			rotation->setX(0.0f);
+			rotation->setY(1.0f);
+			rotation->setZ(0.0f);
+			nullSecondrotation();
+		}
+		return;
+	}
+}
+
+void snake::addBody(){
 	Vector3D* tmp = new Vector3D(getPosunX(), getPosunY(), getPosunZ());
 	Vector3D* rotatio = new Vector3D(rotation->getX(), rotation->getY(), rotation->getZ());
 	Body bod = Body();
@@ -102,50 +297,6 @@ void snake::addBody(GLint dir){
 	bod.righ = righ;
 	bod.lef = lef;
 	telo.insert(telo.begin(), bod);
-	switch (dir)
-	{
-	case GLUT_KEY_DOWN:
-		if (getWall() == 0){
-			rotation_angle = -180;
-			rotation->setX(0.0f);
-			rotation->setY(1.0f);
-			rotation->setZ(0.0f);
-			secondRotation.second_rotation_angle = 180;
-			secondRotation.second_rotation->setX(1);
-			secondRotation.second_rotation->setY(0);
-			secondRotation.second_rotation->setZ(0);
-		}
-		break;
-	case GLUT_KEY_UP:
-		if (getWall() == 0){
-			rotation_angle = 180;
-			rotation->setX(0.0f);
-			rotation->setY(1.0f);
-			rotation->setZ(0.0f);
-			nullSecondrotation();
-		}
-		break;
-	case GLUT_KEY_LEFT:
-		if (getWall() == 0){
-			rotation_angle = -90;
-			rotation->setX(1.0f);
-			rotation->setY(0.0f);
-			rotation->setZ(0.0f);
-			nullSecondrotation();
-		}
-		break;
-	case GLUT_KEY_RIGHT:
-		if (getWall() == 0){
-			rotation_angle = 90;
-			rotation->setX(1.0f);
-			rotation->setY(0.0f);
-			rotation->setZ(0.0f);
-			nullSecondrotation();
-		}
-		break;
-	default:
-		break;
-	}
 	addSphere();
 }
 
@@ -156,8 +307,8 @@ void snake::addSphere(){
 }
 
 void snake::setWall(GLint w){
+	addBody();
 	wall = w;
-	addBody(-1);
 }
 
 void snake::posun(){
@@ -358,7 +509,6 @@ void snake::posun(){
 			gule.pop_back();
 		}
 		else{
-			cout << last->size << endl;
 			last->size -= 0.005f;
 		}
 	}
@@ -397,6 +547,7 @@ void snake::calculatePoints(){
 }
 
 void snake::render(){
+	calculateRotations();
 	glPushMatrix();
 	//cout << "posunX " << posunX << endl;
 	//cout << "posunY " << posunY << endl;
@@ -407,7 +558,7 @@ void snake::render(){
 	gluCylinder(quadratic, 0.1f, 0.1f, size, 32, 32);
 	glScalef(0.1, 0.1, 0.1);
 	hlava->render();
-	hlava->renderBoundingBox();
+	//hlava->renderBoundingBox();
 	calculatePoints();
 	glPopMatrix();
 
@@ -447,6 +598,76 @@ void snake::render(){
 				glTranslatef(last->posun->getX(), last->posun->getY() - last->size, last->posun->getZ());
 			}
 			break;
+		case 1:
+			if (last->up){
+				glTranslatef(last->posun->getX() + last->size, last->posun->getY(), last->posun->getZ());
+			}
+			if (last->down){
+				glTranslatef(last->posun->getX() - last->size, last->posun->getY(), last->posun->getZ());
+			}
+			if (last->lef){
+				glTranslatef(last->posun->getX(), last->posun->getY() + last->size, last->posun->getZ());
+			}
+			if (last->righ){
+				glTranslatef(last->posun->getX(), last->posun->getY() - last->size, last->posun->getZ());
+			}
+			break;
+		case 2:
+			if (last->up){
+				glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() - last->size);
+			}
+			if (last->down){
+				glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() + last->size);
+			}
+			if (last->lef){
+				glTranslatef(last->posun->getX(), last->posun->getY() - last->size, last->posun->getZ());
+			}
+			if (last->righ){
+				glTranslatef(last->posun->getX(), last->posun->getY() + last->size, last->posun->getZ());
+			}
+			break;
+		case 3:
+			if (last->up){
+				glTranslatef(last->posun->getX() + last->size, last->posun->getY(), last->posun->getZ());
+			}
+			if (last->down){
+				glTranslatef(last->posun->getX() - last->size, last->posun->getY(), last->posun->getZ());
+			}
+			if (last->lef){
+				glTranslatef(last->posun->getX(), last->posun->getY() + last->size, last->posun->getZ());
+			}
+			if (last->righ){
+				glTranslatef(last->posun->getX(), last->posun->getY() - last->size, last->posun->getZ());
+			}
+			break;
+		case 4:
+			if (last->up){
+				glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() - last->size);
+			}
+			if (last->down){
+				glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() + last->size);
+			}
+			if (last->lef){
+				glTranslatef(last->posun->getX() - last->size, last->posun->getY(), last->posun->getZ());
+			}
+			if (last->righ){
+				glTranslatef(last->posun->getX() + last->size, last->posun->getY(), last->posun->getZ());
+			}
+			break;
+		case 5:
+			if (last->up){
+				glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() - last->size);
+			}
+			if (last->down){
+				glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() + last->size);
+			}
+			if (last->lef){
+				glTranslatef(last->posun->getX() + last->size, last->posun->getY(), last->posun->getZ());
+			}
+			if (last->righ){
+				glTranslatef(last->posun->getX() - last->size, last->posun->getY(), last->posun->getZ());
+			}
+			break;
 		default:
 			break;
 		}
@@ -466,6 +687,76 @@ void snake::render(){
 			}
 			if (righ){
 				glTranslatef(getPosunX(), getPosunY() - size, getPosunZ());
+			}
+			break;
+		case 1:
+			if (up){
+				glTranslatef(getPosunX() + size, getPosunY(), getPosunZ());
+			}
+			if (down){
+				glTranslatef(getPosunX() - size, getPosunY(), getPosunZ());
+			}
+			if (lef){
+				glTranslatef(getPosunX(), getPosunY() + size, getPosunZ());
+			}
+			if (righ){
+				glTranslatef(getPosunX(), getPosunY() - size, getPosunZ());
+			}
+			break;
+		case 2:
+			if (up){
+				glTranslatef(getPosunX(), getPosunY(), getPosunZ() - size);
+			}
+			if (down){
+				glTranslatef(getPosunX(), getPosunY(), getPosunZ() + size);
+			}
+			if (lef){
+				glTranslatef(getPosunX(), getPosunY() - size, getPosunZ());
+			}
+			if (righ){
+				glTranslatef(getPosunX(), getPosunY() + size, getPosunZ());
+			}
+			break;
+		case 3:
+			if (up){
+				glTranslatef(getPosunX() + size, getPosunY(), getPosunZ());
+			}
+			if (down){
+				glTranslatef(getPosunX() - size, getPosunY(), getPosunZ());
+			}
+			if (lef){
+				glTranslatef(getPosunX(), getPosunY() + size, getPosunZ());
+			}
+			if (righ){
+				glTranslatef(getPosunX(), getPosunY() - size, getPosunZ());
+			}
+			break;
+		case 4:
+			if (up){
+				glTranslatef(getPosunX(), getPosunY(), getPosunZ() - size);
+			}
+			if (down){
+				glTranslatef(getPosunX(), getPosunY(), getPosunZ() + size);
+			}
+			if (lef){
+				glTranslatef(getPosunX() - size, getPosunY(), getPosunZ());
+			}
+			if (righ){
+				glTranslatef(getPosunX() + size, getPosunY(), getPosunZ());
+			}
+			break;
+		case 5:
+			if (up){
+				glTranslatef(getPosunX(), getPosunY(), getPosunZ() - size);
+			}
+			if (down){
+				glTranslatef(getPosunX(), getPosunY(), getPosunZ() + size);
+			}
+			if (lef){
+				glTranslatef(getPosunX() + size, getPosunY(), getPosunZ());
+			}
+			if (righ){
+				glTranslatef(getPosunX() - size, getPosunY(), getPosunZ());
 			}
 			break;
 		default:

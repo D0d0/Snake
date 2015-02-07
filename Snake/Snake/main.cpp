@@ -1,4 +1,5 @@
 #define _USE_MATH_DEFINES
+#include <windows.h>
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -26,7 +27,7 @@
 using namespace Assimp;
 using namespace std;
 
-GLuint  shaders_envmap, shaders_perpixel_phong;
+GLuint  shaders_envmap, shaders_perpixel_phong, shaders_pervertex_phong, tex_point_sprite;
 GLfloat sun_rotation = 0.0f;
 GLdouble vzd, old_vzd, fi, xi, old_fi, old_xi;
 GLint left_mouse_down_x, left_mouse_down_y;
@@ -40,6 +41,16 @@ GLboolean isWired = false;
 Model wall;
 Sphere* slnko;
 
+// casticovy system
+#define NUM_PARTICLES 1000
+struct Particle
+{
+	float position[3];
+	float velocity[3];
+	float color[4];
+	float life;
+};
+Particle g_particle_system[NUM_PARTICLES];
 
 ofstream logFile;
 void reshape(int w, int h){
@@ -58,17 +69,110 @@ void reshape(int w, int h){
 	gluPerspective(60, ratio, 0.1, 1000.0);
 }
 
+float getRandomMinMax(float fMin, float fMax)
+{
+	float fRandNum = (float)rand() / RAND_MAX;
+	return fMin + (fMax - fMin) * fRandNum;
+}
+
+void getRandomVector(float* vector)
+{
+	vector[2] = getRandomMinMax(0.4f, 1.0f);
+	float radius = (float)sqrt(1 - vector[2] * vector[2]);
+	float t = getRandomMinMax(-M_PI, M_PI);
+	vector[0] = (float)cosf(t) * radius;
+	vector[1] = (float)sinf(t) * radius;
+}
+
+void initParticles()
+{
+	for (int i = 0; i < NUM_PARTICLES; i++)
+	{
+		// emitter of all particles is point [0,0,0]
+		g_particle_system[i].position[0] = 0;
+		g_particle_system[i].position[1] = 0;
+		g_particle_system[i].position[2] = 0;
+		getRandomVector(g_particle_system[i].velocity);
+		g_particle_system[i].color[0] = getRandomMinMax(0.0f, 1.0f);
+		g_particle_system[i].color[1] = getRandomMinMax(0.0f, 1.0f);
+		g_particle_system[i].color[2] = getRandomMinMax(0.0f, 1.0f);
+		g_particle_system[i].color[3] = getRandomMinMax(0.0f, 0.4f);
+		g_particle_system[i].life = getRandomMinMax(1.0f, 3.0f);
+	}
+}
+
+void updateParticles()
+{
+	static double dLastFrameTime = timeGetTime();
+	double dCurrenFrameTime = timeGetTime();
+	double dElpasedFrameTime = (float)((dCurrenFrameTime - dLastFrameTime) * 0.001);
+	dLastFrameTime = dCurrenFrameTime;
+	for (int i = 0; i < NUM_PARTICLES; i++)
+	{
+		g_particle_system[i].position[0] += (float)dElpasedFrameTime * g_particle_system[i].velocity[0];
+		g_particle_system[i].position[1] += (float)dElpasedFrameTime * g_particle_system[i].velocity[1];
+		g_particle_system[i].position[2] += (float)dElpasedFrameTime * g_particle_system[i].velocity[2];
+		g_particle_system[i].life -= dElpasedFrameTime;
+		if (g_particle_system[i].life < 0 || g_particle_system[i].position[2] < 0)
+		{
+			g_particle_system[i].position[0] = 0;
+			g_particle_system[i].position[1] = 0;
+			g_particle_system[i].position[2] = 0;
+			getRandomVector(g_particle_system[i].velocity);
+			g_particle_system[i].color[0] = getRandomMinMax(0.0f, 1.0f);
+			g_particle_system[i].color[1] = getRandomMinMax(0.0f, 1.0f);
+			g_particle_system[i].color[2] = getRandomMinMax(0.0f, 1.0f);
+			g_particle_system[i].color[3] = getRandomMinMax(0.0f, 0.4f);
+			g_particle_system[i].life = getRandomMinMax(1.0f, 3.0f);
+		}
+	}
+}
+
+
+void renderParticles()
+{
+	glPushMatrix();
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glDepthMask(GL_FALSE);
+	glTranslatef(3, 0, 0);
+	glScalef(0.5, 0.5, 0.5);
+
+	float quadratic[] = { 1.0f, 0.0f, 0.01f };
+	glPointParameterfvARB(GL_POINT_DISTANCE_ATTENUATION_ARB, quadratic);
+	glPointSize(50);
+	glPointParameterfARB(GL_POINT_FADE_THRESHOLD_SIZE_ARB, 60.0f);
+	glPointParameterfARB(GL_POINT_SIZE_MIN_ARB, 1.0f);
+	glPointParameterfARB(GL_POINT_SIZE_MAX_ARB, 50.0f);
+
+	glBindTexture(GL_TEXTURE_2D, tex_point_sprite);
+	glTexEnvf(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
+	glEnable(GL_POINT_SPRITE_ARB);
+	glEnable(GL_TEXTURE_2D);
+	glBegin(GL_POINTS);
+	for (int i = 0; i < NUM_PARTICLES; i++)
+	{
+		glColor4fv(g_particle_system[i].color);
+		glVertex3fv(g_particle_system[i].position);
+	}
+	glEnd();
+	glDisable(GL_POINT_SPRITE_ARB);
+
+	glDepthMask(GL_TRUE);
+	glDisable(GL_BLEND);
+	glPopMatrix();
+}
 
 void render(){
 	// Vymaz (vypln) obrazovku a z-buffer definovanymi hodnotami
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	if (isWired){
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	}
 	else{
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
-	glUseProgram(0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
 	// Nastav modelview maticu (transformaciu) na jednotkovu maticu
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -79,15 +183,13 @@ void render(){
 	camera_pos[1] = vzd*sin(fi)*cos(xi);
 	camera_pos[2] = vzd*sin(xi);
 	camera_pos[3] = 1;
-	//	if (camera_pos[1] < 0.3f){
-	//		camera_pos[1] = 0.3f;
-	//	}
 	gluLookAt(camera_pos[0], camera_pos[1], camera_pos[2], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 	float view_matrix[16];
 	glGetFloatv(GL_MODELVIEW_MATRIX, view_matrix);
-
 	shaderLoader* sl = new shaderLoader();
 	sl->SetShaderUniformMatrix4f(shaders_envmap, "view_matrix", view_matrix);
+
+	glEnable(GL_LIGHTING);
 	// vykresli suradnicove osi svetoveho systemu roznymi farbami
 	glLineWidth(1);
 	glBegin(GL_LINES);
@@ -98,258 +200,43 @@ void render(){
 	// vykresli skybox
 	// skybox je dany vo svetovych suradniciach, akurat jeho stred je stale v bode, kdeje kamera
 	sky->render();
-	//vykresli kocku
 
-	wor->render();
-
-	glPushMatrix();
-	glScalef(0.1f, 0.1f, 0.1f);
-	glRotatef(90, 1.0f, 0, 0);
-	glTranslatef(0, 2.1f, 0);
-	glPopMatrix();
 	render2DTextFT(10, 45, "F1 - zapni/vypni animaciu");
 	render3DTextGLUT(6, 0, 2, 0.01, GLUT_STROKE_ROMAN, "Projekt OpenGL - GLUT 3D text");
 
-	sn->render();
+	wor->render();
+	glPushMatrix();
+	glUseProgram(shaders_perpixel_phong);
+	GLfloat sun_position[] = { 10.0f, 10.0f, 10.0f, 1.0f };
+	glLightfv(GL_LIGHT0, GL_POSITION, sun_position);
 
-	glColor3f(1, 1, 1);
+
+	/*GLuint tex_enabled = glGetUniformLocation(shaders_perpixel_phong, "texturing_enabled");
+	glDisable(GL_TEXTURE_2D);
+	glUniform1i(tex_enabled, 0);*/
+
+	glUseProgram(shaders_pervertex_phong);
+	GLuint tex_enabled = glGetUniformLocation(shaders_pervertex_phong, "texturing_enabled");
+	glUniform1i(tex_enabled, 0);
+
 	/*
-	glPushMatrix();
-	glTranslatef(-2, 0, 0);
-	glRotatef(90, 0, 0, 1);
-	//glScalef(0.005, 0.005, 0.005);
-	obj.render();
-	logFile << obj.getCollision(sn->bod1.x, sn->bod1.y, sn->bod1.z, sn->getWall()) << " " << endl;
-	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod1.x << " " << sn->bod1.y << " " << sn->bod1.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;
-
-	logFile << obj.getCollision(sn->bod2.x, sn->bod2.y, sn->bod2.z, sn->getWall()) << " " << endl;
-	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod2.x << " " << sn->bod2.y << " " << sn->bod2.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;
-
-	logFile << obj.getCollision(sn->bod3.x, sn->bod3.y, sn->bod3.z, sn->getWall()) << " " << endl;
-	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod3.x << " " << sn->bod3.y << " " << sn->bod3.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;
-
-	logFile << obj.getCollision(sn->bod4.x, sn->bod4.y, sn->bod4.z, sn->getWall()) << " " << endl;
-	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod4.x << " " << sn->bod4.y << " " << sn->bod4.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;
-
-
-
-	logFile << obj.getCollision(sn->bod5.x, sn->bod5.y, sn->bod5.z, sn->getWall()) << " " << endl;
-	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod5.x << " " << sn->bod5.y << " " << sn->bod5.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;
-
-	logFile << obj.getCollision(sn->bod6.x, sn->bod6.y, sn->bod6.z, sn->getWall()) << " " << endl;
-	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod6.x << " " << sn->bod6.y << " " << sn->bod6.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;
-
-	logFile << obj.getCollision(sn->bod7.x, sn->bod7.y, sn->bod7.z, sn->getWall()) << " " << endl;
-	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod7.x << " " << sn->bod7.y << " " << sn->bod7.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;
-
-	logFile << obj.getCollision(sn->bod8.x, sn->bod8.y, sn->bod8.z, sn->getWall()) << " " << endl;
-	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod8.x << " " << sn->bod8.y << " " << sn->bod8.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;
-	obj.renderBoundingBox();
-
-	glPopMatrix();
-
-
-
-	glPushMatrix();
-	glTranslatef(2, 0, 0);
-	glRotatef(-90, 0, 0, 1);
-	//glScalef(0.005, 0.005, 0.005);
-	obj.render();
-	logFile << obj.getCollision(sn->bod1.x, sn->bod1.y, sn->bod1.z, sn->getWall()) << " " << endl;
-	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod1.x << " " << sn->bod1.y << " " << sn->bod1.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;
-
-	logFile << obj.getCollision(sn->bod2.x, sn->bod2.y, sn->bod2.z, sn->getWall()) << " " << endl;
-	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod2.x << " " << sn->bod2.y << " " << sn->bod2.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;
-
-	logFile << obj.getCollision(sn->bod3.x, sn->bod3.y, sn->bod3.z, sn->getWall()) << " " << endl;
-	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod3.x << " " << sn->bod3.y << " " << sn->bod3.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;
-
-	logFile << obj.getCollision(sn->bod4.x, sn->bod4.y, sn->bod4.z, sn->getWall()) << " " << endl;
-	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod4.x << " " << sn->bod4.y << " " << sn->bod4.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;
-
-
-
-	logFile << obj.getCollision(sn->bod5.x, sn->bod5.y, sn->bod5.z, sn->getWall()) << " " << endl;
-	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod5.x << " " << sn->bod5.y << " " << sn->bod5.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;
-
-	logFile << obj.getCollision(sn->bod6.x, sn->bod6.y, sn->bod6.z, sn->getWall()) << " " << endl;
-	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod6.x << " " << sn->bod6.y << " " << sn->bod6.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;
-
-	logFile << obj.getCollision(sn->bod7.x, sn->bod7.y, sn->bod7.z, sn->getWall()) << " " << endl;
-	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod7.x << " " << sn->bod7.y << " " << sn->bod7.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;
-
-	logFile << obj.getCollision(sn->bod8.x, sn->bod8.y, sn->bod8.z, sn->getWall()) << " " << endl;
-	logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod8.x << " " << sn->bod8.y << " " << sn->bod8.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;
-	obj.renderBoundingBox();
-
-	glPopMatrix();
-
+	glEnable(GL_LIGHTING);
+	GLfloat earth_ambient[] = { 0.1f, 0.1f, 0.1f, 1.0f };
+	GLfloat earth_diffuse[] = { 0.9f, 0.9f, 0.9f, 1.0f };
+	GLfloat earth_specular[] = { 1.0f, 0.0f, 0.0f, 1.0f };
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, earth_ambient);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, earth_diffuse);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, earth_specular);
+	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 16.0f);
 	*/
-
-	glPushMatrix();
-	glTranslatef(0, 0, -1.9);
-	glRotatef(90, -90, 0, 1);
-	//glScalef(0.005, 0.005, 0.005);
-	//obj.render();
-	logFile << obj.getCollision(sn->bod1.x, sn->bod1.y, sn->bod1.z, sn->getWall()) << " " << endl;
-	/*logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod1.x << " " << sn->bod1.y << " " << sn->bod1.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;*/
-
-	logFile << obj.getCollision(sn->bod2.x, sn->bod2.y, sn->bod2.z, sn->getWall()) << " " << endl;
-	/*logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod2.x << " " << sn->bod2.y << " " << sn->bod2.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;*/
-
-	logFile << obj.getCollision(sn->bod3.x, sn->bod3.y, sn->bod3.z, sn->getWall()) << " " << endl;
-	/*logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod3.x << " " << sn->bod3.y << " " << sn->bod3.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;*/
-
-	logFile << obj.getCollision(sn->bod4.x, sn->bod4.y, sn->bod4.z, sn->getWall()) << " " << endl;
-	/*logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod4.x << " " << sn->bod4.y << " " << sn->bod4.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;*/
-
-
-
-	logFile << obj.getCollision(sn->bod5.x, sn->bod5.y, sn->bod5.z, sn->getWall()) << " " << endl;
-	/*logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod5.x << " " << sn->bod5.y << " " << sn->bod5.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;*/
-
-	logFile << obj.getCollision(sn->bod6.x, sn->bod6.y, sn->bod6.z, sn->getWall()) << " " << endl;
-	/*logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod6.x << " " << sn->bod6.y << " " << sn->bod6.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;*/
-
-	logFile << obj.getCollision(sn->bod7.x, sn->bod7.y, sn->bod7.z, sn->getWall()) << " " << endl;
-	/*logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod7.x << " " << sn->bod7.y << " " << sn->bod7.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;*/
-
-	logFile << obj.getCollision(sn->bod8.x, sn->bod8.y, sn->bod8.z, sn->getWall()) << " " << endl;
-	/*logFile << obj.bod1.x << " " << obj.bod1.y << " " << obj.bod1.z << endl;
-	logFile << sn->bod8.x << " " << sn->bod8.y << " " << sn->bod8.z << endl;
-	logFile << obj.bod8.x << " " << obj.bod8.y << " " << obj.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;*/
-	//obj.renderBoundingBox();
-	glPopMatrix();
-
-	glPushMatrix();
-	glTranslatef(2, 0, 0);
-	glRotatef(-90, 0, 0, 1);
-	//glScalef(0.005, 0.005, 0.005);
-	//wall.render();
-	logFile << wall.getCollision(sn->bod1.x, sn->bod1.y, sn->bod1.z, sn->getWall()) << " " << endl;
-	/*logFile << wall.bod1.x << " " << wall.bod1.y << " " << wall.bod1.z << endl;
-	logFile << sn->bod1.x << " " << sn->bod1.y << " " << sn->bod1.z << endl;
-	logFile << wall.bod8.x << " " << wall.bod8.y << " " << wall.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;*/
-
-	logFile << wall.getCollision(sn->bod2.x, sn->bod2.y, sn->bod2.z, sn->getWall()) << " " << endl;
-	/*logFile << wall.bod1.x << " " << wall.bod1.y << " " << wall.bod1.z << endl;
-	logFile << sn->bod2.x << " " << sn->bod2.y << " " << sn->bod2.z << endl;
-	logFile << wall.bod8.x << " " << wall.bod8.y << " " << wall.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;*/
-
-	logFile << wall.getCollision(sn->bod3.x, sn->bod3.y, sn->bod3.z, sn->getWall()) << " " << endl;
-	/*logFile << wall.bod1.x << " " << wall.bod1.y << " " << wall.bod1.z << endl;
-	logFile << sn->bod3.x << " " << sn->bod3.y << " " << sn->bod3.z << endl;
-	logFile << wall.bod8.x << " " << wall.bod8.y << " " << wall.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;*/
-
-	logFile << wall.getCollision(sn->bod4.x, sn->bod4.y, sn->bod4.z, sn->getWall()) << " " << endl;
-	/*logFile << wall.bod1.x << " " << wall.bod1.y << " " << wall.bod1.z << endl;
-	logFile << sn->bod4.x << " " << sn->bod4.y << " " << sn->bod4.z << endl;
-	logFile << wall.bod8.x << " " << wall.bod8.y << " " << wall.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;*/
-
-
-
-	logFile << wall.getCollision(sn->bod5.x, sn->bod5.y, sn->bod5.z, sn->getWall()) << " " << endl;
-	/*logFile << wall.bod1.x << " " << wall.bod1.y << " " << wall.bod1.z << endl;
-	logFile << sn->bod5.x << " " << sn->bod5.y << " " << sn->bod5.z << endl;
-	logFile << wall.bod8.x << " " << wall.bod8.y << " " << wall.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;*/
-
-	logFile << wall.getCollision(sn->bod6.x, sn->bod6.y, sn->bod6.z, sn->getWall()) << " " << endl;
-	/*logFile << wall.bod1.x << " " << wall.bod1.y << " " << wall.bod1.z << endl;
-	logFile << sn->bod6.x << " " << sn->bod6.y << " " << sn->bod6.z << endl;
-	logFile << wall.bod8.x << " " << wall.bod8.y << " " << wall.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;*/
-
-	logFile << wall.getCollision(sn->bod7.x, sn->bod7.y, sn->bod7.z, sn->getWall()) << " " << endl;
-	/*logFile << wall.bod1.x << " " << wall.bod1.y << " " << wall.bod1.z << endl;
-	logFile << sn->bod7.x << " " << sn->bod7.y << " " << sn->bod7.z << endl;
-	logFile << wall.bod8.x << " " << wall.bod8.y << " " << wall.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;*/
-
-	logFile << wall.getCollision(sn->bod8.x, sn->bod8.y, sn->bod8.z, sn->getWall()) << " " << endl;
-	/*logFile << wall.bod1.x << " " << wall.bod1.y << " " << wall.bod1.z << endl;
-	logFile << sn->bod8.x << " " << sn->bod8.y << " " << sn->bod8.z << endl;
-	logFile << wall.bod8.x << " " << wall.bod8.y << " " << wall.bod8.z << endl;
-	logFile << "------------------------------------------------" << endl;*/
-	//wall.renderBoundingBox();
+	glColor3f(1, 0, 0);
 
 	glPopMatrix();
+	sn->render();
+	glUseProgram(0);
+	glColor3f(1, 1, 1);
 
-
+	renderParticles();
 	glutSwapBuffers();
 }
 
@@ -375,6 +262,48 @@ bool init(void)
 
 	// initializuj kameru
 	fi = 0.7f; xi = 0.7f; vzd = 10.0f;
+
+
+	GLfloat light_ambient[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	GLfloat light_diffuse[] = { 0.9f, 0.9f, 0.9f, 1.0f };
+	GLfloat light_specular[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+	glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 1.0);
+	glEnable(GL_LIGHT0);
+
+	glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular);
+	glLightf(GL_LIGHT1, GL_CONSTANT_ATTENUATION, 1.0);
+	glEnable(GL_LIGHT1);
+
+	glLightfv(GL_LIGHT3, GL_AMBIENT, light_ambient);
+	glLightfv(GL_LIGHT3, GL_DIFFUSE, light_diffuse);
+	glLightfv(GL_LIGHT3, GL_SPECULAR, light_specular);
+	glLightf(GL_LIGHT3, GL_CONSTANT_ATTENUATION, 1.0);
+	glEnable(GL_LIGHT3);
+
+	glLightfv(GL_LIGHT2, GL_AMBIENT, light_ambient);
+	glLightfv(GL_LIGHT2, GL_DIFFUSE, light_diffuse);
+	glLightfv(GL_LIGHT2, GL_SPECULAR, light_specular);
+	glLightf(GL_LIGHT2, GL_CONSTANT_ATTENUATION, 1.0);
+	glEnable(GL_LIGHT2);
+
+	glLightfv(GL_LIGHT4, GL_AMBIENT, light_ambient);
+	glLightfv(GL_LIGHT4, GL_DIFFUSE, light_diffuse);
+	glLightfv(GL_LIGHT4, GL_SPECULAR, light_specular);
+	glLightf(GL_LIGHT4, GL_CONSTANT_ATTENUATION, 1.0);
+	glEnable(GL_LIGHT4);
+
+	glLightfv(GL_LIGHT5, GL_AMBIENT, light_ambient);
+	glLightfv(GL_LIGHT5, GL_DIFFUSE, light_diffuse);
+	glLightfv(GL_LIGHT5, GL_SPECULAR, light_specular);
+	glLightf(GL_LIGHT5, GL_CONSTANT_ATTENUATION, 1.0);
+	glEnable(GL_LIGHT5);
+
+
 
 
 	// parametre hmly
@@ -448,6 +377,7 @@ void timer(int a){
 	sn->posun();
 	glutPostRedisplay();
 	glutTimerFunc(10, timer, a);
+	updateParticles();
 }
 
 void keyboard(unsigned char key, int x, int y){
@@ -502,33 +432,21 @@ int main(int argc, char** argv){
 	wall = loader.getModel();
 	shaderLoader* sl = new shaderLoader();
 	shaders_envmap = sl->loadProgram("shaders/perpixel_envmap.vert", "shaders/perpixel_envmap.frag");
+
 	sl->SetShaderUniform1i(shaders_envmap, "color_texture", 0);
 	sl->SetShaderUniform1i(shaders_envmap, "cubemap_texture", 1);
 
-	shaders_perpixel_phong = sl->loadProgram("shaders/perpixel_phong.vert", "shaders/perpixel_phong.frag");
-	int locationTexture = glGetUniformLocation(shaders_perpixel_phong, "color_texture");
+	shaders_pervertex_phong = sl->loadProgram("shaders/pervertex_phong.vert", "shaders/pervertex_phong.frag");
+	int locationTexture = glGetUniformLocation(shaders_pervertex_phong, "color_texture");
 	glUniform1i(locationTexture, 0);
-	glActiveTexture(GL_TEXTURE0);
 
-	slnko = new Sphere(32, 32);
+	shaders_perpixel_phong = sl->loadProgram("shaders/perpixel_phong.vert", "shaders/perpixel_phong.frag");
+	sl->SetShaderUniform1i(shaders_perpixel_phong, "color_texture", 0);
 
+	textureLoader* tl = new textureLoader();
+	tex_point_sprite = tl->LoadTexture("textures/particle.png");
 	glutDisplayFunc(render);
 	glutReshapeFunc(reshape);
-	//worldObject* obj = new worldObject();
-	/*const aiScene* scene;
-	Importer importer;
-	cout << "Loading objects..." << endl;
-	string fileName = "plane/Boeing747.obj";
-	ifstream inFile(fileName.c_str());
-	bool a = inFile.fail() == false;
-
-	scene = importer.ReadFile(fileName, aiProcess_Triangulate);
-
-	if (!scene){
-	cout << "Scene not loaded, beacuse: " << importer.GetErrorString() << endl;
-	//return false;
-	}*/
-
 
 	// Spustenie hlavneho okruhu zachytavania sprav
 	glutMainLoop();

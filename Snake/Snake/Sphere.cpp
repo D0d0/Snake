@@ -136,7 +136,6 @@ void Sphere::renderBoundingBox(){
 	glVertex3f(minX, maxY, minZ);
 	glEnd();
 
-	glColor3f(1, 1, 1);
 }
 
 
