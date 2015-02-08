@@ -7,11 +7,11 @@
 #include <fstream>
 #include "glew.h"
 #include "glut-3.7.6-bin\glut.h"
-
 using namespace std;
 
 Model::Model()
 {
+	body = new vec4[8];
 	//logFile.open("log.txt");
 }
 
@@ -53,30 +53,34 @@ void Model::calculateBoundingBox(){
 	}
 }
 
-void Model::render(){
-	glEnable(GL_TEXTURE_2D);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	for (int i = getSize() - 1; i >= 0; i--){
-		Mesh mesh = meshes[i];
-		mesh.bindDiffuseTexture();
-		glBindBuffer(GL_ARRAY_BUFFER, mesh.normalBuffer);
-		glNormalPointer(GL_FLOAT, 0, NULL);
-		glBindBuffer(GL_ARRAY_BUFFER, mesh.vertexBuffer);
-		glVertexPointer(3, GL_FLOAT, 0, (char *)NULL);
-		glBindBuffer(GL_ARRAY_BUFFER, mesh.texCoordBuffer);
-		glTexCoordPointer(2, GL_FLOAT, 0, (char *)NULL);
+void Model::render(bool render){
+	if (render){
+		glEnable(GL_TEXTURE_2D);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		for (int i = getSize() - 1; i >= 0; i--){
+			Mesh mesh = meshes[i];
+			mesh.bindDiffuseTexture();
+			glBindBuffer(GL_ARRAY_BUFFER, mesh.normalBuffer);
+			glNormalPointer(GL_FLOAT, 0, NULL);
+			glBindBuffer(GL_ARRAY_BUFFER, mesh.vertexBuffer);
+			glVertexPointer(3, GL_FLOAT, 0, (char *)NULL);
+			glBindBuffer(GL_ARRAY_BUFFER, mesh.texCoordBuffer);
+			glTexCoordPointer(2, GL_FLOAT, 0, (char *)NULL);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.faceBuffer);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.faceBuffer);
 
-		glDrawElements(GL_TRIANGLES, mesh.getFaceCount(), GL_UNSIGNED_INT, NULL);
+			glDrawElements(GL_TRIANGLES, mesh.getFaceCount(), GL_UNSIGNED_INT, NULL);
 
-		glBindTexture(GL_TEXTURE_2D, 0);
-		glDisable(GL_TEXTURE_2D);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glDisable(GL_TEXTURE_2D);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		}
 	}
-	calculatePoints();
+	else{
+		calculatePoints();
+	}
 };
 
 void Model::renderBoundingBox(){
@@ -146,40 +150,72 @@ void Model::renderBoundingBox(){
 }
 
 void Model::calculatePoints(){
+	minX_w = INT_MAX;
+	minY_w = INT_MAX;
+	minZ_w = INT_MAX;
+
+	maxX_w = INT_MIN;
+	maxY_w = INT_MIN;
+	maxZ_w = INT_MIN;
+
 	float m[16];
 	glGetFloatv(GL_MODELVIEW_MATRIX, m);
-	glm::mat4 modelViewMatrix = glm::make_mat4(m);
+	glm::mat4 modelViewMatrix = (glm::make_mat4(m));
 
 	float bod[4] = { minX, minY, minZ, 1 };
-	bod1 = modelViewMatrix*make_vec4(bod);
+	body[0] = modelViewMatrix*make_vec4(bod);
+
+	float bo[4] = { maxX, minY, minZ, 1 };
+	body[1] = modelViewMatrix*make_vec4(bo);
+
+	float b[4] = { minX, maxY, minZ, 1 };
+	body[2] = modelViewMatrix*make_vec4(b);
+
+	float c[4] = { minX, minY, maxZ, 1 };
+	body[3] = modelViewMatrix*make_vec4(c);
+
+	float d[4] = { maxX, maxY, minZ, 1 };
+	body[4] = modelViewMatrix*make_vec4(d);
+
+	float e[4] = { maxX, minY, maxZ, 1 };
+	body[5] = modelViewMatrix*make_vec4(e);
+
+	float f[4] = { minX, maxY, maxZ, 1 };
+	body[6] = modelViewMatrix*make_vec4(f);
 
 	float g[4] = { maxX, maxY, maxZ, 1 };
-	bod8 = modelViewMatrix*make_vec4(g);
+	body[7] = modelViewMatrix*make_vec4(g);
+
+	for (int i = 0; i < 8; i++){
+		if (body[i].x < minX_w){
+			minX_w = body[i].x;
+		}
+		if (body[i].x  > maxX_w){
+			maxX_w = body[i].x;
+		}
+
+		if (body[i].y < minY_w){
+			minY_w = body[i].y;
+		}
+		if (body[i].y > maxY_w){
+			maxY_w = body[i].y;
+		}
+
+		if (body[i].z < minZ_w){
+			minZ_w = body[i].z;
+		}
+		if (body[i].z > maxZ_w){
+			maxZ_w = body[i].z;
+		}
+	}
 }
 
 
-bool Model::getCollision(GLfloat x, GLfloat y, GLfloat z, GLint wall){
-	if (bod1.x >= x && bod8.x <= x && bod1.y <= y && bod8.y >= y && bod1.z <= z && bod8.z >= z){
-		cout << "kolizia1" << endl;
-	}
-	if (bod1.x <= x && bod8.x >= x && bod1.y <= y && bod8.y >= y && bod1.z <= z && bod8.z >= z){
-		cout << "kolizia2" << endl;
-	}
-	if (bod1.x <= x && bod8.x >= x && bod1.y >= y && bod8.y <= y && bod1.z <= z && bod8.z >= z){
-		cout << "kolizia3" << endl;
-	}
-	if (wall == 0 || wall == 2 || wall == 4){
-		return bod1.x >= x && bod8.x <= x && bod1.y <= y && bod8.y >= y && bod1.z <= z && bod8.z >= z;
-	}
-	if (wall == 1){
-		return bod1.x <= x && bod8.x >= x && bod1.y >= y && bod8.y <= y && bod1.z <= z && bod8.z >= z;
-	}
-	//??
-	if (wall == 3){
-		return bod1.x >= x && bod8.x <= x && bod1.y <= y && bod8.y <= y && bod1.z <= z && bod8.z >= z;
-	}
-	if ( wall == 5){
-		return bod1.x <= x && bod8.x >= x && bod1.y <= y && bod8.y >= y && bod1.z >= z && bod8.z <= z;
-	}
-	return false;
+bool Model::getCollision(GLfloat x, GLfloat y, GLfloat z){
+	cout << (minX_w <= x && x <= maxX_w) << "x" << endl;
+	cout << (minY_w <= y && y <= maxY_w) << "y" << endl;
+	cout << (minZ_w <= z && z <= maxZ_w) << "z" << endl;
+	return minX_w <= x && x <= maxX_w &&
+		minY_w <= y && y <= maxY_w &&
+		minZ_w <= z && z <= maxZ_w;
 }

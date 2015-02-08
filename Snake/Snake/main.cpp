@@ -31,13 +31,15 @@ using namespace Assimp;
 using namespace std;
 
 GLuint shaders_envmap, shaders_perpixel_phong, shaders_pervertex_phong, tex_point_sprite;
+GLint uroven = 10;
 GLint selected_menu = 0;
+GLint selected_menu_nastavenia = 0;
 GLuint g_window_height, g_window_width;
 GLfloat sun_rotation = 0.0f;
 GLdouble vzd, old_vzd, fi, xi, old_fi, old_xi;
 GLint left_mouse_down_x, left_mouse_down_y;
 GLint right_mouse_down_y;
-GLboolean right_down = false, left_down = false, menu = true;
+GLboolean right_down = false, left_down = false, menu = true, nastavenia = false;
 skybox* sky;
 world* wor;
 Model obj;
@@ -183,27 +185,60 @@ void render(){
 		glEnable(GL_LIGHTING);
 		glColor3f(1.0f, 1.0f, 0.0f);
 		render2DTextWGL((g_window_width - 175) / 2, g_window_height - 50, "Snake 3D", -40);
-		if (selected_menu == 0){
-			glColor3f(1.0f, 0.0f, 0.0f);
+		if (nastavenia){
+			if (selected_menu_nastavenia == 0){
+				glColor3f(1.0f, 0.0f, 0.0f);
+			}
+			else{
+				glColor3f(1.0f, 1.0f, 0.0f);
+			}
+			string uroven_string = "";
+			switch (uroven)
+			{
+			case 5:
+				uroven_string = "< Easy >";
+				break;
+			case 10:
+				uroven_string = "< Medium >";
+				break;
+			case 15:
+				uroven_string = "< Hard >";
+				break;
+			default:
+				break;
+			}
+			render2DTextWGL((g_window_width - 110) / 2, g_window_height - 200, uroven_string.c_str(), -24);
+			if (selected_menu_nastavenia == 1){
+				glColor3f(1.0f, 0.0f, 0.0f);
+			}
+			else{
+				glColor3f(1.0f, 1.0f, 0.0f);
+			}
+			render2DTextWGL((g_window_width - 110) / 2, g_window_height - 230, "Back", -24);
 		}
 		else{
-			glColor3f(1.0f, 1.0f, 0.0f);
+			if (selected_menu == 0){
+				glColor3f(1.0f, 0.0f, 0.0f);
+			}
+			else{
+				glColor3f(1.0f, 1.0f, 0.0f);
+			}
+			render2DTextWGL((g_window_width - 110) / 2, g_window_height - 200, "New game", -24);
+			if (selected_menu == 1){
+				glColor3f(1.0f, 0.0f, 0.0f);
+			}
+			else{
+				glColor3f(1.0f, 1.0f, 0.0f);
+			}
+			render2DTextWGL((g_window_width - 110) / 2, g_window_height - 230, "Options", -24);
+			if (selected_menu == 2){
+				glColor3f(1.0f, 0.0f, 0.0f);
+			}
+			else{
+				glColor3f(1.0f, 1.0f, 0.0f);
+			}
+			render2DTextWGL((g_window_width - 110) / 2, g_window_height - 260, "Quit", -24);
 		}
-		render2DTextWGL((g_window_width - 110) / 2, g_window_height - 200, "Spusti hru", -24);
-		if (selected_menu == 1){
-			glColor3f(1.0f, 0.0f, 0.0f);
-		}
-		else{
-			glColor3f(1.0f, 1.0f, 0.0f);
-		}
-		render2DTextWGL((g_window_width - 110) / 2, g_window_height - 230, "Nastavenia", -24);
-		if (selected_menu == 2){
-			glColor3f(1.0f, 0.0f, 0.0f);
-		}
-		else{
-			glColor3f(1.0f, 1.0f, 0.0f);
-		}
-		render2DTextWGL((g_window_width - 110) / 2, g_window_height - 260, "Koniec hry", -24);
 		glDisable(GL_LIGHTING);
 	}
 	else{
@@ -211,16 +246,36 @@ void render(){
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 
+		shaderLoader* sl = new shaderLoader();
+
+		sn->render(false);
+
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		glPushMatrix();
+		glScalef(1, 1, 1);
+		glRotatef(90, 1, 0, 0);
+		glTranslatef(1, 1, 1);
+		obj.render(false);
+		for (int i = 0; i < 8; i++){
+			obj.getCollision(sn->body[i].x, sn->body[i].y, sn->body[i].z);
+		}
+		glPopMatrix();
+
+
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
 		// Nastav view matice pre pohlad na svetovy suradnicovy system
 		GLfloat camera_pos[4];
 		camera_pos[0] = vzd*cos(fi)*cos(xi);
 		camera_pos[1] = vzd*sin(fi)*cos(xi);
 		camera_pos[2] = vzd*sin(xi);
 		camera_pos[3] = 1;
-		gluLookAt(camera_pos[0], camera_pos[1], camera_pos[2], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 		float view_matrix[16];
+
+		gluLookAt(camera_pos[0], camera_pos[1], camera_pos[2], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 		glGetFloatv(GL_MODELVIEW_MATRIX, view_matrix);
-		shaderLoader* sl = new shaderLoader();
 		sl->SetShaderUniformMatrix4f(shaders_envmap, "view_matrix", view_matrix);
 
 		// vykresli suradnicove osi svetoveho systemu roznymi farbami
@@ -235,7 +290,7 @@ void render(){
 		sky->render();
 
 		render2DTextFT(10, 45, "F1 - zapni/vypni animaciu");
-		render3DTextGLUT(6, 0, 2, 0.01, GLUT_STROKE_ROMAN, "Projekt OpenGL - GLUT 3D text");
+		render3DTextGLUT(1.9, 0, 0, 0.004, GLUT_STROKE_ROMAN, "EASTER EGG");
 
 		wor->render();
 		glPushMatrix();
@@ -246,13 +301,13 @@ void render(){
 
 
 		glUseProgram(shaders_pervertex_phong);
-		GLuint tex_enabled = glGetUniformLocation(shaders_pervertex_phong, "texturing_enabled");
+		GLint tex_enabled = glGetUniformLocation(shaders_pervertex_phong, "texturing_enabled");
 		sl->SetShaderUniform1i(shaders_envmap, "texturing_enabled", 1);
 		glUniform1i(tex_enabled, 0);
 		glColor3f(1, 0, 0);
 
 		glPopMatrix();
-		sn->render();
+		sn->render(true);
 		glUseProgram(0);
 		glColor3f(1, 1, 1);
 
@@ -260,24 +315,11 @@ void render(){
 		glEnable(GL_TEXTURE_2D);
 		//renderParticles();
 		glPushMatrix();
-		glRotatef(-90, 0, 0, 1);
-		glTranslatef(0, 2, 0);
-		obj.render();
-		cout << obj.getCollision(sn->bod1.x, sn->bod1.y, sn->bod1.z, sn->getWall()) << " " << endl;
-
-		cout << obj.getCollision(sn->bod2.x, sn->bod2.y, sn->bod2.z, sn->getWall()) << " " << endl;
-
-		cout << obj.getCollision(sn->bod3.x, sn->bod3.y, sn->bod3.z, sn->getWall()) << " " << endl;
-
-		cout << obj.getCollision(sn->bod4.x, sn->bod4.y, sn->bod4.z, sn->getWall()) << " " << endl;
-
-		cout << obj.getCollision(sn->bod5.x, sn->bod5.y, sn->bod5.z, sn->getWall()) << " " << endl;
-
-		cout << obj.getCollision(sn->bod6.x, sn->bod6.y, sn->bod6.z, sn->getWall()) << " " << endl;
-
-		cout << obj.getCollision(sn->bod7.x, sn->bod7.y, sn->bod7.z, sn->getWall()) << " " << endl;
-
-		cout << obj.getCollision(sn->bod8.x, sn->bod8.y, sn->bod8.z, sn->getWall()) << " " << endl;
+		glScalef(1, 1, 1);
+		glRotatef(90, 1, 0, 0);
+		glTranslatef(1, 1, 1);
+		obj.render(true);
+		obj.renderBoundingBox();
 		glPopMatrix();
 	}
 	glutSwapBuffers();
@@ -420,7 +462,7 @@ void timer(int a){
 	sun_rotation += 0.5f;
 	sn->posun();
 	glutPostRedisplay();
-	glutTimerFunc(10, timer, a);
+	glutTimerFunc(uroven, timer, a);
 	updateParticles();
 }
 
@@ -428,30 +470,45 @@ void keyboard(unsigned char key, int x, int y){
 	switch (key){
 	case 13:
 		if (menu){
-			switch (selected_menu)
-			{
-			case 0:
-				menu = false;
-				glutTimerFunc(10, timer, 0);
-				break;
-			case 1:
-				break;
-			case 2:
-				exit(0);
-				break;
-			default:
-				break;
+			if (nastavenia){
+				if (selected_menu_nastavenia == 1){
+					nastavenia = false;
+				}
+			}
+			else{
+				switch (selected_menu)
+				{
+				case 0:
+					menu = false;
+					glutTimerFunc(uroven, timer, 0);
+					break;
+				case 1:
+					selected_menu_nastavenia = 0;
+					nastavenia = true;
+					break;
+				case 2:
+					exit(0);
+					break;
+				default:
+					break;
+				}
 			}
 		}
 		break;
 	case 27:
-		exit(0);
+		if (menu && nastavenia){
+			nastavenia = false;
+		}
+		else{
+			exit(0);
+		}
 		break;
 	case 'w':
 		isWired = !isWired;
 	default:
 		break;
 	}
+	glutPostRedisplay();
 }
 
 void special_keys(int a_keys, int x, int y){
@@ -459,15 +516,66 @@ void special_keys(int a_keys, int x, int y){
 		switch (a_keys)
 		{
 		case GLUT_KEY_UP:
-			if (selected_menu - 1 < 0){
-				selected_menu = 2;
+			if (nastavenia){
+				if (selected_menu_nastavenia - 1 < 0){
+					selected_menu_nastavenia = 1;
+				}
+				else{
+					selected_menu_nastavenia = (selected_menu_nastavenia - 1) % 2;
+				}
 			}
 			else{
-				selected_menu = (selected_menu - 1) % 3;
+				if (selected_menu - 1 < 0){
+					selected_menu = 2;
+				}
+				else{
+					selected_menu = (selected_menu - 1) % 3;
+				}
 			}
 			break;
 		case GLUT_KEY_DOWN:
-			selected_menu = (selected_menu + 1) % 3;
+			if (nastavenia){
+				selected_menu_nastavenia = (selected_menu_nastavenia + 1) % 2;
+			}
+			else{
+				selected_menu = (selected_menu + 1) % 3;
+			}
+			break;
+		case GLUT_KEY_LEFT:
+			if (nastavenia && selected_menu_nastavenia == 0){
+				switch (uroven)
+				{
+				case 5:
+					uroven = 15;
+					break;
+				case 10:
+					uroven = 5;
+					break;
+				case 15:
+					uroven = 10;
+					break;
+				default:
+					break;
+				}
+			}
+			break;
+		case GLUT_KEY_RIGHT:
+			if (nastavenia && selected_menu_nastavenia == 0){
+				switch (uroven)
+				{
+				case 5:
+					uroven = 10;
+					break;
+				case 10:
+					uroven = 15;
+					break;
+				case 15:
+					uroven = 5;
+					break;
+				default:
+					break;
+				}
+			}
 			break;
 		default:
 			break;
@@ -506,9 +614,11 @@ int main(int argc, char** argv){
 	ObjectLoader loader = ObjectLoader();
 	sky = new skybox();
 	wor = new world();
-	//loader.loadModel("hulk/hulk.obj");
+	//loader.loadModel("Hulk/Hulk.obj");
 	//loader.loadModel("mountain/Mountain Dew Code Red soda can.obj");
-	loader.loadModel("apple/app.obj");
+	//loader.loadModel("Apple/apple.obj");
+	loader.loadModel("Ostrich/Ostrich.obj");
+	//loader.loadModel("fox/fox.obj");
 	obj = loader.getModel();
 	loader.loadModel("wall/grade.obj");
 	wall = loader.getModel();

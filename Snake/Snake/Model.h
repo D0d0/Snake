@@ -16,16 +16,17 @@ class Model
 {
 	vector<Mesh> meshes;
 public:
-	vec4 bod1, bod8;
+	vec4* body;
 	GLfloat maxX, minX, maxY, minY, maxZ, minZ;
+	GLfloat maxX_w, minX_w, maxY_w, minY_w, maxZ_w, minZ_w;
 	Model();
 	void calculatePoints();
 	int getSize(){ return meshes.size(); };
 	void calculateBoundingBox();
-	void render();
+	void render(bool render);
 	void renderBoundingBox();
 	void addMesh(Mesh mesh){ meshes.push_back(mesh); };
-	bool getCollision(GLfloat x, GLfloat y, GLfloat z, GLint wall);
+	bool getCollision(GLfloat x, GLfloat y, GLfloat z);
 	~Model();
 };
 

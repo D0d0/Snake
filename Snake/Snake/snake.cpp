@@ -20,6 +20,7 @@ snake::snake()
 	rotation->setZ(0.0f);
 	secondRotation = Body();
 	nullSecondrotation();
+	body = new vec4[8];
 }
 
 void snake::nullSecondrotation(){
@@ -515,256 +516,265 @@ void snake::posun(){
 
 
 void snake::calculatePoints(){
-
 	float m[16];
 	glGetFloatv(GL_MODELVIEW_MATRIX, m);
-	glm::mat4 modelViewMatrix = glm::make_mat4(m);
+	glm::mat4 modelViewMatrix = (glm::make_mat4(m));
 
 	float bod[4] = { hlava->minX, hlava->minY, hlava->minZ, 1 };
-	bod1 = modelViewMatrix*make_vec4(bod);
+	body[0] = modelViewMatrix*make_vec4(bod);
 
 	float bo[4] = { hlava->maxX, hlava->minY, hlava->minZ, 1 };
-	bod2 = modelViewMatrix*make_vec4(bo);
+	body[1] = modelViewMatrix*make_vec4(bo);
 
 	float b[4] = { hlava->minX, hlava->maxY, hlava->minZ, 1 };
-	bod3 = modelViewMatrix*make_vec4(b);
+	body[2] = modelViewMatrix*make_vec4(b);
 
 	float c[4] = { hlava->minX, hlava->minY, hlava->maxZ, 1 };
-	bod4 = modelViewMatrix*make_vec4(c);
+	body[3] = modelViewMatrix*make_vec4(c);
 
 	float d[4] = { hlava->maxX, hlava->maxY, hlava->minZ, 1 };
-	bod5 = modelViewMatrix*make_vec4(d);
+	body[4] = modelViewMatrix*make_vec4(d);
 
 	float e[4] = { hlava->maxX, hlava->minY, hlava->maxZ, 1 };
-	bod6 = modelViewMatrix*make_vec4(e);
+	body[5] = modelViewMatrix*make_vec4(e);
 
 	float f[4] = { hlava->minX, hlava->maxY, hlava->maxZ, 1 };
-	bod7 = modelViewMatrix*make_vec4(f);
+	body[6] = modelViewMatrix*make_vec4(f);
 
 	float g[4] = { hlava->maxX, hlava->maxY, hlava->maxZ, 1 };
-	bod8 = modelViewMatrix*make_vec4(g);
+	body[7] = modelViewMatrix*make_vec4(g);
 }
 
-void snake::render(){
-	calculateRotations();
-	glPushMatrix();
-	//cout << "posunX " << posunX << endl;
-	//cout << "posunY " << posunY << endl;
-	//cout << "posunZ " << posunZ << endl;
-	glTranslatef(getPosunX(), getPosunY(), getPosunZ());
-	glRotatef(rotation_angle, rotation->getX(), rotation->getY(), rotation->getZ());
-	glRotatef(secondRotation.second_rotation_angle, secondRotation.second_rotation->getX(), secondRotation.second_rotation->getY(), secondRotation.second_rotation->getZ());
-	gluCylinder(quadratic, 0.1f, 0.1f, size, 32, 32);
-	glScalef(0.1, 0.1, 0.1);
-	hlava->render();
-	hlava->renderBoundingBox();
-	calculatePoints();
-	glPopMatrix();
-
-	for each (Sphere* var in gule){
+void snake::render(bool render){
+	if (render){
+		calculateRotations();
 		glPushMatrix();
-		glTranslatef(var->posunX, var->posunY, var->posunZ);
+		glTranslatef(getPosunX(), getPosunY(), getPosunZ());
+		glRotatef(rotation_angle, rotation->getX(), rotation->getY(), rotation->getZ());
+		glRotatef(secondRotation.second_rotation_angle, secondRotation.second_rotation->getX(), secondRotation.second_rotation->getY(), secondRotation.second_rotation->getZ());
+		gluCylinder(quadratic, 0.1f, 0.1f, size, 32, 32);
 		glScalef(0.1, 0.1, 0.1);
-		var->render();
+		calculatePoints();
+		hlava->render();
+		hlava->renderBoundingBox();
 		glPopMatrix();
-	}
 
-	for each (Body var in telo){
-		glPushMatrix();
-		glTranslatef(var.posun->getX(), var.posun->getY(), var.posun->getZ());
-		glRotatef(var.rotation_angle, var.rotation->getX(), var.rotation->getY(), var.rotation->getZ());
-		glRotatef(var.second_rotation_angle, var.second_rotation->getX(), var.second_rotation->getY(), var.second_rotation->getZ());
-		gluCylinder(quadratic, 0.1f, 0.1f, var.size, 32, 32);
-		glPopMatrix();
-	}
-
-	glPushMatrix();
-	if (telo.size() > 0){
-		Body* last = &(telo.back());
-		switch (last->wall)
-		{
-		case 0:
-			if (last->up){
-				glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() - last->size);
-			}
-			if (last->down){
-				glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() + last->size);
-			}
-			if (last->lef){
-				glTranslatef(last->posun->getX(), last->posun->getY() + last->size, last->posun->getZ());
-			}
-			if (last->righ){
-				glTranslatef(last->posun->getX(), last->posun->getY() - last->size, last->posun->getZ());
-			}
-			break;
-		case 1:
-			if (last->up){
-				glTranslatef(last->posun->getX() + last->size, last->posun->getY(), last->posun->getZ());
-			}
-			if (last->down){
-				glTranslatef(last->posun->getX() - last->size, last->posun->getY(), last->posun->getZ());
-			}
-			if (last->lef){
-				glTranslatef(last->posun->getX(), last->posun->getY() + last->size, last->posun->getZ());
-			}
-			if (last->righ){
-				glTranslatef(last->posun->getX(), last->posun->getY() - last->size, last->posun->getZ());
-			}
-			break;
-		case 2:
-			if (last->up){
-				glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() - last->size);
-			}
-			if (last->down){
-				glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() + last->size);
-			}
-			if (last->lef){
-				glTranslatef(last->posun->getX(), last->posun->getY() - last->size, last->posun->getZ());
-			}
-			if (last->righ){
-				glTranslatef(last->posun->getX(), last->posun->getY() + last->size, last->posun->getZ());
-			}
-			break;
-		case 3:
-			if (last->up){
-				glTranslatef(last->posun->getX() + last->size, last->posun->getY(), last->posun->getZ());
-			}
-			if (last->down){
-				glTranslatef(last->posun->getX() - last->size, last->posun->getY(), last->posun->getZ());
-			}
-			if (last->lef){
-				glTranslatef(last->posun->getX(), last->posun->getY() + last->size, last->posun->getZ());
-			}
-			if (last->righ){
-				glTranslatef(last->posun->getX(), last->posun->getY() - last->size, last->posun->getZ());
-			}
-			break;
-		case 4:
-			if (last->up){
-				glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() - last->size);
-			}
-			if (last->down){
-				glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() + last->size);
-			}
-			if (last->lef){
-				glTranslatef(last->posun->getX() - last->size, last->posun->getY(), last->posun->getZ());
-			}
-			if (last->righ){
-				glTranslatef(last->posun->getX() + last->size, last->posun->getY(), last->posun->getZ());
-			}
-			break;
-		case 5:
-			if (last->up){
-				glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() - last->size);
-			}
-			if (last->down){
-				glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() + last->size);
-			}
-			if (last->lef){
-				glTranslatef(last->posun->getX() + last->size, last->posun->getY(), last->posun->getZ());
-			}
-			if (last->righ){
-				glTranslatef(last->posun->getX() - last->size, last->posun->getY(), last->posun->getZ());
-			}
-			break;
-		default:
-			break;
+		for each (Sphere* var in gule){
+			glPushMatrix();
+			glTranslatef(var->posunX, var->posunY, var->posunZ);
+			glScalef(0.1, 0.1, 0.1);
+			var->render();
+			glPopMatrix();
 		}
+
+		for each (Body var in telo){
+			glPushMatrix();
+			glTranslatef(var.posun->getX(), var.posun->getY(), var.posun->getZ());
+			glRotatef(var.rotation_angle, var.rotation->getX(), var.rotation->getY(), var.rotation->getZ());
+			glRotatef(var.second_rotation_angle, var.second_rotation->getX(), var.second_rotation->getY(), var.second_rotation->getZ());
+			gluCylinder(quadratic, 0.1f, 0.1f, var.size, 32, 32);
+			glPopMatrix();
+		}
+
+		glPushMatrix();
+		if (telo.size() > 0){
+			Body* last = &(telo.back());
+			switch (last->wall)
+			{
+			case 0:
+				if (last->up){
+					glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() - last->size);
+				}
+				if (last->down){
+					glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() + last->size);
+				}
+				if (last->lef){
+					glTranslatef(last->posun->getX(), last->posun->getY() + last->size, last->posun->getZ());
+				}
+				if (last->righ){
+					glTranslatef(last->posun->getX(), last->posun->getY() - last->size, last->posun->getZ());
+				}
+				break;
+			case 1:
+				if (last->up){
+					glTranslatef(last->posun->getX() + last->size, last->posun->getY(), last->posun->getZ());
+				}
+				if (last->down){
+					glTranslatef(last->posun->getX() - last->size, last->posun->getY(), last->posun->getZ());
+				}
+				if (last->lef){
+					glTranslatef(last->posun->getX(), last->posun->getY() + last->size, last->posun->getZ());
+				}
+				if (last->righ){
+					glTranslatef(last->posun->getX(), last->posun->getY() - last->size, last->posun->getZ());
+				}
+				break;
+			case 2:
+				if (last->up){
+					glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() - last->size);
+				}
+				if (last->down){
+					glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() + last->size);
+				}
+				if (last->lef){
+					glTranslatef(last->posun->getX(), last->posun->getY() - last->size, last->posun->getZ());
+				}
+				if (last->righ){
+					glTranslatef(last->posun->getX(), last->posun->getY() + last->size, last->posun->getZ());
+				}
+				break;
+			case 3:
+				if (last->up){
+					glTranslatef(last->posun->getX() + last->size, last->posun->getY(), last->posun->getZ());
+				}
+				if (last->down){
+					glTranslatef(last->posun->getX() - last->size, last->posun->getY(), last->posun->getZ());
+				}
+				if (last->lef){
+					glTranslatef(last->posun->getX(), last->posun->getY() + last->size, last->posun->getZ());
+				}
+				if (last->righ){
+					glTranslatef(last->posun->getX(), last->posun->getY() - last->size, last->posun->getZ());
+				}
+				break;
+			case 4:
+				if (last->up){
+					glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() - last->size);
+				}
+				if (last->down){
+					glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() + last->size);
+				}
+				if (last->lef){
+					glTranslatef(last->posun->getX() - last->size, last->posun->getY(), last->posun->getZ());
+				}
+				if (last->righ){
+					glTranslatef(last->posun->getX() + last->size, last->posun->getY(), last->posun->getZ());
+				}
+				break;
+			case 5:
+				if (last->up){
+					glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() - last->size);
+				}
+				if (last->down){
+					glTranslatef(last->posun->getX(), last->posun->getY(), last->posun->getZ() + last->size);
+				}
+				if (last->lef){
+					glTranslatef(last->posun->getX() + last->size, last->posun->getY(), last->posun->getZ());
+				}
+				if (last->righ){
+					glTranslatef(last->posun->getX() - last->size, last->posun->getY(), last->posun->getZ());
+				}
+				break;
+			default:
+				break;
+			}
+		}
+		else{
+			switch (getWall())
+			{
+			case 0:
+				if (up){
+					glTranslatef(getPosunX(), getPosunY(), getPosunZ() - size);
+				}
+				if (down){
+					glTranslatef(getPosunX(), getPosunY(), getPosunZ() + size);
+				}
+				if (lef){
+					glTranslatef(getPosunX(), getPosunY() + size, getPosunZ());
+				}
+				if (righ){
+					glTranslatef(getPosunX(), getPosunY() - size, getPosunZ());
+				}
+				break;
+			case 1:
+				if (up){
+					glTranslatef(getPosunX() + size, getPosunY(), getPosunZ());
+				}
+				if (down){
+					glTranslatef(getPosunX() - size, getPosunY(), getPosunZ());
+				}
+				if (lef){
+					glTranslatef(getPosunX(), getPosunY() + size, getPosunZ());
+				}
+				if (righ){
+					glTranslatef(getPosunX(), getPosunY() - size, getPosunZ());
+				}
+				break;
+			case 2:
+				if (up){
+					glTranslatef(getPosunX(), getPosunY(), getPosunZ() - size);
+				}
+				if (down){
+					glTranslatef(getPosunX(), getPosunY(), getPosunZ() + size);
+				}
+				if (lef){
+					glTranslatef(getPosunX(), getPosunY() - size, getPosunZ());
+				}
+				if (righ){
+					glTranslatef(getPosunX(), getPosunY() + size, getPosunZ());
+				}
+				break;
+			case 3:
+				if (up){
+					glTranslatef(getPosunX() + size, getPosunY(), getPosunZ());
+				}
+				if (down){
+					glTranslatef(getPosunX() - size, getPosunY(), getPosunZ());
+				}
+				if (lef){
+					glTranslatef(getPosunX(), getPosunY() + size, getPosunZ());
+				}
+				if (righ){
+					glTranslatef(getPosunX(), getPosunY() - size, getPosunZ());
+				}
+				break;
+			case 4:
+				if (up){
+					glTranslatef(getPosunX(), getPosunY(), getPosunZ() - size);
+				}
+				if (down){
+					glTranslatef(getPosunX(), getPosunY(), getPosunZ() + size);
+				}
+				if (lef){
+					glTranslatef(getPosunX() - size, getPosunY(), getPosunZ());
+				}
+				if (righ){
+					glTranslatef(getPosunX() + size, getPosunY(), getPosunZ());
+				}
+				break;
+			case 5:
+				if (up){
+					glTranslatef(getPosunX(), getPosunY(), getPosunZ() - size);
+				}
+				if (down){
+					glTranslatef(getPosunX(), getPosunY(), getPosunZ() + size);
+				}
+				if (lef){
+					glTranslatef(getPosunX() + size, getPosunY(), getPosunZ());
+				}
+				if (righ){
+					glTranslatef(getPosunX() - size, getPosunY(), getPosunZ());
+				}
+				break;
+			default:
+				break;
+			}
+		}
+		glScalef(0.1, 0.1, 0.1);
+		chvost->render();
+		glPopMatrix();
 	}
 	else{
-		switch (getWall())
-		{
-		case 0:
-			if (up){
-				glTranslatef(getPosunX(), getPosunY(), getPosunZ() - size);
-			}
-			if (down){
-				glTranslatef(getPosunX(), getPosunY(), getPosunZ() + size);
-			}
-			if (lef){
-				glTranslatef(getPosunX(), getPosunY() + size, getPosunZ());
-			}
-			if (righ){
-				glTranslatef(getPosunX(), getPosunY() - size, getPosunZ());
-			}
-			break;
-		case 1:
-			if (up){
-				glTranslatef(getPosunX() + size, getPosunY(), getPosunZ());
-			}
-			if (down){
-				glTranslatef(getPosunX() - size, getPosunY(), getPosunZ());
-			}
-			if (lef){
-				glTranslatef(getPosunX(), getPosunY() + size, getPosunZ());
-			}
-			if (righ){
-				glTranslatef(getPosunX(), getPosunY() - size, getPosunZ());
-			}
-			break;
-		case 2:
-			if (up){
-				glTranslatef(getPosunX(), getPosunY(), getPosunZ() - size);
-			}
-			if (down){
-				glTranslatef(getPosunX(), getPosunY(), getPosunZ() + size);
-			}
-			if (lef){
-				glTranslatef(getPosunX(), getPosunY() - size, getPosunZ());
-			}
-			if (righ){
-				glTranslatef(getPosunX(), getPosunY() + size, getPosunZ());
-			}
-			break;
-		case 3:
-			if (up){
-				glTranslatef(getPosunX() + size, getPosunY(), getPosunZ());
-			}
-			if (down){
-				glTranslatef(getPosunX() - size, getPosunY(), getPosunZ());
-			}
-			if (lef){
-				glTranslatef(getPosunX(), getPosunY() + size, getPosunZ());
-			}
-			if (righ){
-				glTranslatef(getPosunX(), getPosunY() - size, getPosunZ());
-			}
-			break;
-		case 4:
-			if (up){
-				glTranslatef(getPosunX(), getPosunY(), getPosunZ() - size);
-			}
-			if (down){
-				glTranslatef(getPosunX(), getPosunY(), getPosunZ() + size);
-			}
-			if (lef){
-				glTranslatef(getPosunX() - size, getPosunY(), getPosunZ());
-			}
-			if (righ){
-				glTranslatef(getPosunX() + size, getPosunY(), getPosunZ());
-			}
-			break;
-		case 5:
-			if (up){
-				glTranslatef(getPosunX(), getPosunY(), getPosunZ() - size);
-			}
-			if (down){
-				glTranslatef(getPosunX(), getPosunY(), getPosunZ() + size);
-			}
-			if (lef){
-				glTranslatef(getPosunX() + size, getPosunY(), getPosunZ());
-			}
-			if (righ){
-				glTranslatef(getPosunX() - size, getPosunY(), getPosunZ());
-			}
-			break;
-		default:
-			break;
-		}
+		calculateRotations();
+		glPushMatrix();
+		glTranslatef(getPosunX(), getPosunY(), getPosunZ());
+		glRotatef(rotation_angle, rotation->getX(), rotation->getY(), rotation->getZ());
+		glRotatef(secondRotation.second_rotation_angle, secondRotation.second_rotation->getX(), secondRotation.second_rotation->getY(), secondRotation.second_rotation->getZ());
+		glScalef(0.1, 0.1, 0.1);
+		calculatePoints();
+		hlava->render();
+		glPopMatrix();
 	}
-	glScalef(0.1, 0.1, 0.1);
-	chvost->render();
-	glPopMatrix();
 }
 
 

@@ -46,12 +46,12 @@ class snake
 	void nullSecondrotation();
 	void calculateRotations();
 public:
-	vec4 bod1, bod2, bod3, bod4, bod5, bod6, bod7, bod8;
+	vec4* body;
 	GLfloat posunX = 2.1f;
 	GLfloat posunY = 0.0f;
 	GLfloat posunZ = 0.0f;
 	snake();
-	void render();
+	void render(bool render);
 	void posun();
 	void setWall(GLint w);
 	void addSphere();
