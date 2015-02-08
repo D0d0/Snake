@@ -212,9 +212,6 @@ void Model::calculatePoints(){
 
 
 bool Model::getCollision(GLfloat x, GLfloat y, GLfloat z){
-	cout << (minX_w <= x && x <= maxX_w) << "x" << endl;
-	cout << (minY_w <= y && y <= maxY_w) << "y" << endl;
-	cout << (minZ_w <= z && z <= maxZ_w) << "z" << endl;
 	return minX_w <= x && x <= maxX_w &&
 		minY_w <= y && y <= maxY_w &&
 		minZ_w <= z && z <= maxZ_w;

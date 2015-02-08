@@ -772,7 +772,6 @@ void snake::render(bool render){
 		glRotatef(secondRotation.second_rotation_angle, secondRotation.second_rotation->getX(), secondRotation.second_rotation->getY(), secondRotation.second_rotation->getZ());
 		glScalef(0.1, 0.1, 0.1);
 		calculatePoints();
-		hlava->render();
 		glPopMatrix();
 	}
 }

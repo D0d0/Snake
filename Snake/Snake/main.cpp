@@ -35,7 +35,7 @@ GLint uroven = 10;
 GLint selected_menu = 0;
 GLint selected_menu_nastavenia = 0;
 GLuint g_window_height, g_window_width;
-GLfloat sun_rotation = 0.0f;
+GLfloat rotation = 0.0f;
 GLdouble vzd, old_vzd, fi, xi, old_fi, old_xi;
 GLint left_mouse_down_x, left_mouse_down_y;
 GLint right_mouse_down_y;
@@ -254,12 +254,18 @@ void render(){
 		glLoadIdentity();
 
 		glPushMatrix();
-		glScalef(1, 1, 1);
-		glRotatef(90, 1, 0, 0);
-		glTranslatef(1, 1, 1);
+		glScalef(0.4, 0.4, 0.4);
+		glTranslatef(-4.3, 4.3, 5.5);
+		glRotatef(90, 0, 0, 1);
+		glRotatef(rotation, 0, 1, 0);
 		obj.render(false);
+		glRotatef(-rotation, 0, 1, 0);
+		glRotatef(-90, 0, 0, 1);
+		glTranslatef(4.3, -4.3, -5.5);
 		for (int i = 0; i < 8; i++){
-			obj.getCollision(sn->body[i].x, sn->body[i].y, sn->body[i].z);
+			if (obj.getCollision(sn->body[i].x, sn->body[i].y, sn->body[i].z)){
+				cout << obj.getCollision(sn->body[i].x, sn->body[i].y, sn->body[i].z);
+			}
 		}
 		glPopMatrix();
 
@@ -293,12 +299,12 @@ void render(){
 		render3DTextGLUT(1.9, 0, 0, 0.004, GLUT_STROKE_ROMAN, "EASTER EGG");
 
 		wor->render();
+
 		glPushMatrix();
 		glEnable(GL_LIGHT0);
 		glUseProgram(shaders_perpixel_phong);
 		GLfloat sun_position[] = { 10.0f, 10.0f, 10.0f, 1.0f };
 		glLightfv(GL_LIGHT0, GL_POSITION, sun_position);
-
 
 		glUseProgram(shaders_pervertex_phong);
 		GLint tex_enabled = glGetUniformLocation(shaders_pervertex_phong, "texturing_enabled");
@@ -315,11 +321,15 @@ void render(){
 		glEnable(GL_TEXTURE_2D);
 		//renderParticles();
 		glPushMatrix();
-		glScalef(1, 1, 1);
-		glRotatef(90, 1, 0, 0);
-		glTranslatef(1, 1, 1);
+		glScalef(0.4, 0.4, 0.4);
+		glTranslatef(-4.3, 4.3, 5.5);
+		glRotatef(90, 0, 0, 1);
+		glRotatef(rotation, 0, 1, 0);
 		obj.render(true);
 		obj.renderBoundingBox();
+		glRotatef(-rotation, 0, 1, 0);
+		glRotatef(-90, 0, 0, 1);
+		glTranslatef(4.3, -4.3, -5.5);
 		glPopMatrix();
 	}
 	glutSwapBuffers();
@@ -459,7 +469,8 @@ void mouse_move(int x, int y){
 }
 
 void timer(int a){
-	sun_rotation += 0.5f;
+	
+rotation += 0.5f;
 	sn->posun();
 	glutPostRedisplay();
 	glutTimerFunc(uroven, timer, a);
@@ -615,9 +626,9 @@ int main(int argc, char** argv){
 	sky = new skybox();
 	wor = new world();
 	//loader.loadModel("Hulk/Hulk.obj");
-	//loader.loadModel("mountain/Mountain Dew Code Red soda can.obj");
-	//loader.loadModel("Apple/apple.obj");
-	loader.loadModel("Ostrich/Ostrich.obj");
+	loader.loadModel("mountain/Mountain Dew Code Red soda can.obj");
+	//loader.loadModel("Apple/app.obj");
+	//loader.loadModel("Ostrich/Ostrich.obj");
 	//loader.loadModel("fox/fox.obj");
 	obj = loader.getModel();
 	loader.loadModel("wall/grade.obj");
