@@ -20,7 +20,6 @@ snake::snake()
 	rotation->setZ(0.0f);
 	secondRotation = Body();
 	nullSecondrotation();
-
 }
 
 void snake::nullSecondrotation(){
@@ -558,7 +557,7 @@ void snake::render(){
 	gluCylinder(quadratic, 0.1f, 0.1f, size, 32, 32);
 	glScalef(0.1, 0.1, 0.1);
 	hlava->render();
-	//hlava->renderBoundingBox();
+	hlava->renderBoundingBox();
 	calculatePoints();
 	glPopMatrix();
 

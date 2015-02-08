@@ -146,7 +146,6 @@ void Model::renderBoundingBox(){
 }
 
 void Model::calculatePoints(){
-
 	float m[16];
 	glGetFloatv(GL_MODELVIEW_MATRIX, m);
 	glm::mat4 modelViewMatrix = glm::make_mat4(m);
@@ -163,22 +162,12 @@ bool Model::getCollision(GLfloat x, GLfloat y, GLfloat z, GLint wall){
 	if (bod1.x >= x && bod8.x <= x && bod1.y <= y && bod8.y >= y && bod1.z <= z && bod8.z >= z){
 		cout << "kolizia1" << endl;
 	}
-	if (bod1.x <= x && bod8.x >= x && bod1.y <= y && bod8.y >= y && bod1.z >= z && bod8.z <= z){
+	if (bod1.x <= x && bod8.x >= x && bod1.y <= y && bod8.y >= y && bod1.z <= z && bod8.z >= z){
 		cout << "kolizia2" << endl;
 	}
 	if (bod1.x <= x && bod8.x >= x && bod1.y >= y && bod8.y <= y && bod1.z <= z && bod8.z >= z){
 		cout << "kolizia3" << endl;
 	}
-	/*if (bod1.x >= x && bod8.x <= x){
-		cout << "x" << endl;
-	}
-	if (bod1.y <= y && bod8.y <= y){
-		cout << "y" << endl;
-	}
-	if (bod1.z <= z && bod8.z >= z){
-		cout << "z" << endl;
-	}
-	cout << "-----------------" << endl;*/
 	if (wall == 0 || wall == 2 || wall == 4){
 		return bod1.x >= x && bod8.x <= x && bod1.y <= y && bod8.y >= y && bod1.z <= z && bod8.z >= z;
 	}

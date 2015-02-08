@@ -83,6 +83,7 @@ void world::render(){
 	glDrawElements(GL_QUADS, 24, GL_UNSIGNED_INT, NULL);
 
 	// deactivate vertex arrays after drawing
+	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 

@@ -2,7 +2,7 @@
 // FUNKCIE PRE INICIALIZACIU A VYKRESLOVANIE TEXTOV
 
 // vytvorenie 2D znakov do display listov pomocou WGL
-void init2DFontWGL(const char* font_name);
+void init2DFontWGL(const char* font_name, int size);
 
 // vytvorenie 3D znakov do display listov pomocou WGL
 void init3DFontWGL(const char* font_name);
@@ -14,7 +14,7 @@ void init2DFontFT(const char* font_file);
 void render2DTextFT(float x, float y, const char *string);
 
 // renderovanie pripraveneho 2D textu na danu oknovu poziciu pomocou WGL kniznice
-void render2DTextWGL(float x, float y, const char *string);
+void render2DTextWGL(float x, float y, const char *string, int size);
 
 // renderovanie 3D textu na danu svetovu poziciu s danou skalou pomocou WGL kniznice
 void render3DTextWGL(float x, float y, float z, float scale, const char *string);

@@ -1,5 +1,8 @@
 #define _USE_MATH_DEFINES
 #include <windows.h>
+#include <stdio.h>
+#include <math.h>
+#include <cmath>
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -27,12 +30,14 @@
 using namespace Assimp;
 using namespace std;
 
-GLuint  shaders_envmap, shaders_perpixel_phong, shaders_pervertex_phong, tex_point_sprite;
+GLuint shaders_envmap, shaders_perpixel_phong, shaders_pervertex_phong, tex_point_sprite;
+GLint selected_menu = 0;
+GLuint g_window_height, g_window_width;
 GLfloat sun_rotation = 0.0f;
 GLdouble vzd, old_vzd, fi, xi, old_fi, old_xi;
 GLint left_mouse_down_x, left_mouse_down_y;
 GLint right_mouse_down_y;
-GLboolean right_down = false, left_down = false;
+GLboolean right_down = false, left_down = false, menu = true;
 skybox* sky;
 world* wor;
 Model obj;
@@ -54,7 +59,8 @@ Particle g_particle_system[NUM_PARTICLES];
 
 ofstream logFile;
 void reshape(int w, int h){
-
+	g_window_width = w;
+	g_window_height = h;
 	// nastvenie casti okna pre vykreslenie, tentoraz kreslime do celeho okna
 	glViewport(0, 0, w, h);
 	// Budeme menit projekcnu maticu (transformaciu)
@@ -88,7 +94,6 @@ void initParticles()
 {
 	for (int i = 0; i < NUM_PARTICLES; i++)
 	{
-		// emitter of all particles is point [0,0,0]
 		g_particle_system[i].position[0] = 0;
 		g_particle_system[i].position[1] = 0;
 		g_particle_system[i].position[2] = 0;
@@ -165,6 +170,8 @@ void renderParticles()
 
 void render(){
 	// Vymaz (vypln) obrazovku a z-buffer definovanymi hodnotami
+
+	glEnable(GL_MULTISAMPLE);
 	if (isWired){
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	}
@@ -172,71 +179,107 @@ void render(){
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	if (menu){
+		glEnable(GL_LIGHTING);
+		glColor3f(1.0f, 1.0f, 0.0f);
+		render2DTextWGL((g_window_width - 175) / 2, g_window_height - 50, "Snake 3D", -40);
+		if (selected_menu == 0){
+			glColor3f(1.0f, 0.0f, 0.0f);
+		}
+		else{
+			glColor3f(1.0f, 1.0f, 0.0f);
+		}
+		render2DTextWGL((g_window_width - 110) / 2, g_window_height - 200, "Spusti hru", -24);
+		if (selected_menu == 1){
+			glColor3f(1.0f, 0.0f, 0.0f);
+		}
+		else{
+			glColor3f(1.0f, 1.0f, 0.0f);
+		}
+		render2DTextWGL((g_window_width - 110) / 2, g_window_height - 230, "Nastavenia", -24);
+		if (selected_menu == 2){
+			glColor3f(1.0f, 0.0f, 0.0f);
+		}
+		else{
+			glColor3f(1.0f, 1.0f, 0.0f);
+		}
+		render2DTextWGL((g_window_width - 110) / 2, g_window_height - 260, "Koniec hry", -24);
+		glDisable(GL_LIGHTING);
+	}
+	else{
+		// Nastav modelview maticu (transformaciu) na jednotkovu maticu
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
 
-	// Nastav modelview maticu (transformaciu) na jednotkovu maticu
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+		// Nastav view matice pre pohlad na svetovy suradnicovy system
+		GLfloat camera_pos[4];
+		camera_pos[0] = vzd*cos(fi)*cos(xi);
+		camera_pos[1] = vzd*sin(fi)*cos(xi);
+		camera_pos[2] = vzd*sin(xi);
+		camera_pos[3] = 1;
+		gluLookAt(camera_pos[0], camera_pos[1], camera_pos[2], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		float view_matrix[16];
+		glGetFloatv(GL_MODELVIEW_MATRIX, view_matrix);
+		shaderLoader* sl = new shaderLoader();
+		sl->SetShaderUniformMatrix4f(shaders_envmap, "view_matrix", view_matrix);
 
-	// Nastav view matice pre pohlad na svetovy suradnicovy system
-	GLfloat camera_pos[4];
-	camera_pos[0] = vzd*cos(fi)*cos(xi);
-	camera_pos[1] = vzd*sin(fi)*cos(xi);
-	camera_pos[2] = vzd*sin(xi);
-	camera_pos[3] = 1;
-	gluLookAt(camera_pos[0], camera_pos[1], camera_pos[2], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-	float view_matrix[16];
-	glGetFloatv(GL_MODELVIEW_MATRIX, view_matrix);
-	shaderLoader* sl = new shaderLoader();
-	sl->SetShaderUniformMatrix4f(shaders_envmap, "view_matrix", view_matrix);
+		// vykresli suradnicove osi svetoveho systemu roznymi farbami
+		glLineWidth(1);
+		glBegin(GL_LINES);
+		glColor3f(1.0f, 0.0f, 0.0f); glVertex3f(0.0f, 0.0f, 0.0f); glVertex3f(100.0f, 0.0f, 0.0f);
+		glColor3f(0.0f, 1.0f, 0.0f); glVertex3f(0.0f, 0.0f, 0.0f); glVertex3f(0.0f, 100.0f, 0.0f);
+		glColor3f(0.0f, 0.0f, 1.0f); glVertex3f(0.0f, 0.0f, 0.0f); glVertex3f(0.0f, 0.0f, 100.0f);
+		glEnd();
+		// vykresli skybox
+		// skybox je dany vo svetovych suradniciach, akurat jeho stred je stale v bode, kdeje kamera
+		sky->render();
 
-	glEnable(GL_LIGHTING);
-	// vykresli suradnicove osi svetoveho systemu roznymi farbami
-	glLineWidth(1);
-	glBegin(GL_LINES);
-	glColor3f(1.0f, 0.0f, 0.0f); glVertex3f(0.0f, 0.0f, 0.0f); glVertex3f(100.0f, 0.0f, 0.0f);
-	glColor3f(0.0f, 1.0f, 0.0f); glVertex3f(0.0f, 0.0f, 0.0f); glVertex3f(0.0f, 100.0f, 0.0f);
-	glColor3f(0.0f, 0.0f, 1.0f); glVertex3f(0.0f, 0.0f, 0.0f); glVertex3f(0.0f, 0.0f, 100.0f);
-	glEnd();
-	// vykresli skybox
-	// skybox je dany vo svetovych suradniciach, akurat jeho stred je stale v bode, kdeje kamera
-	sky->render();
+		render2DTextFT(10, 45, "F1 - zapni/vypni animaciu");
+		render3DTextGLUT(6, 0, 2, 0.01, GLUT_STROKE_ROMAN, "Projekt OpenGL - GLUT 3D text");
 
-	render2DTextFT(10, 45, "F1 - zapni/vypni animaciu");
-	render3DTextGLUT(6, 0, 2, 0.01, GLUT_STROKE_ROMAN, "Projekt OpenGL - GLUT 3D text");
-
-	wor->render();
-	glPushMatrix();
-	glUseProgram(shaders_perpixel_phong);
-	GLfloat sun_position[] = { 10.0f, 10.0f, 10.0f, 1.0f };
-	glLightfv(GL_LIGHT0, GL_POSITION, sun_position);
+		wor->render();
+		glPushMatrix();
+		glEnable(GL_LIGHT0);
+		glUseProgram(shaders_perpixel_phong);
+		GLfloat sun_position[] = { 10.0f, 10.0f, 10.0f, 1.0f };
+		glLightfv(GL_LIGHT0, GL_POSITION, sun_position);
 
 
-	/*GLuint tex_enabled = glGetUniformLocation(shaders_perpixel_phong, "texturing_enabled");
-	glDisable(GL_TEXTURE_2D);
-	glUniform1i(tex_enabled, 0);*/
+		glUseProgram(shaders_pervertex_phong);
+		GLuint tex_enabled = glGetUniformLocation(shaders_pervertex_phong, "texturing_enabled");
+		sl->SetShaderUniform1i(shaders_envmap, "texturing_enabled", 1);
+		glUniform1i(tex_enabled, 0);
+		glColor3f(1, 0, 0);
 
-	glUseProgram(shaders_pervertex_phong);
-	GLuint tex_enabled = glGetUniformLocation(shaders_pervertex_phong, "texturing_enabled");
-	glUniform1i(tex_enabled, 0);
+		glPopMatrix();
+		sn->render();
+		glUseProgram(0);
+		glColor3f(1, 1, 1);
 
-	/*
-	glEnable(GL_LIGHTING);
-	GLfloat earth_ambient[] = { 0.1f, 0.1f, 0.1f, 1.0f };
-	GLfloat earth_diffuse[] = { 0.9f, 0.9f, 0.9f, 1.0f };
-	GLfloat earth_specular[] = { 1.0f, 0.0f, 0.0f, 1.0f };
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, earth_ambient);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, earth_diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, earth_specular);
-	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 16.0f);
-	*/
-	glColor3f(1, 0, 0);
+		glDisable(GL_LIGHT0);
+		glEnable(GL_TEXTURE_2D);
+		//renderParticles();
+		glPushMatrix();
+		glRotatef(-90, 0, 0, 1);
+		glTranslatef(0, 2, 0);
+		obj.render();
+		cout << obj.getCollision(sn->bod1.x, sn->bod1.y, sn->bod1.z, sn->getWall()) << " " << endl;
 
-	glPopMatrix();
-	sn->render();
-	glUseProgram(0);
-	glColor3f(1, 1, 1);
+		cout << obj.getCollision(sn->bod2.x, sn->bod2.y, sn->bod2.z, sn->getWall()) << " " << endl;
 
-	renderParticles();
+		cout << obj.getCollision(sn->bod3.x, sn->bod3.y, sn->bod3.z, sn->getWall()) << " " << endl;
+
+		cout << obj.getCollision(sn->bod4.x, sn->bod4.y, sn->bod4.z, sn->getWall()) << " " << endl;
+
+		cout << obj.getCollision(sn->bod5.x, sn->bod5.y, sn->bod5.z, sn->getWall()) << " " << endl;
+
+		cout << obj.getCollision(sn->bod6.x, sn->bod6.y, sn->bod6.z, sn->getWall()) << " " << endl;
+
+		cout << obj.getCollision(sn->bod7.x, sn->bod7.y, sn->bod7.z, sn->getWall()) << " " << endl;
+
+		cout << obj.getCollision(sn->bod8.x, sn->bod8.y, sn->bod8.z, sn->getWall()) << " " << endl;
+		glPopMatrix();
+	}
 	glutSwapBuffers();
 }
 
@@ -272,7 +315,7 @@ bool init(void)
 	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
 	glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 1.0);
 	glEnable(GL_LIGHT0);
-
+	/*
 	glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
 	glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular);
@@ -303,7 +346,7 @@ bool init(void)
 	glLightf(GL_LIGHT5, GL_CONSTANT_ATTENUATION, 1.0);
 	glEnable(GL_LIGHT5);
 
-
+	*/
 
 
 	// parametre hmly
@@ -322,57 +365,58 @@ bool init(void)
 
 // Procedura obsluhujuca stlacenie tlacitka mysi
 void mouse_klik(int button, int state, int x, int y){
-	switch (button){
-	case GLUT_LEFT_BUTTON:
-		if (state == GLUT_DOWN){
-			left_down = true;
-			left_mouse_down_x = x;
-			left_mouse_down_y = y;
-			old_fi = fi;
-			old_xi = xi;
+	if (!menu){
+		switch (button){
+		case GLUT_LEFT_BUTTON:
+			if (state == GLUT_DOWN){
+				left_down = true;
+				left_mouse_down_x = x;
+				left_mouse_down_y = y;
+				old_fi = fi;
+				old_xi = xi;
+			}
+			else if (state == GLUT_UP){
+				left_down = false;
+			}
+			break;
+		case GLUT_RIGHT_BUTTON:
+			if (state == GLUT_DOWN){
+				right_down = true;
+				right_mouse_down_y = y;
+				old_vzd = vzd;
+			}
+			else if (state == GLUT_UP){
+				right_down = false;
+			}
+			break;
+		default:
+			break;
 		}
-		else if (state == GLUT_UP){
-			left_down = false;
-		}
-		break;
-	case GLUT_RIGHT_BUTTON:
-		if (state == GLUT_DOWN){
-			right_down = true;
-			right_mouse_down_y = y;
-			old_vzd = vzd;
-		}
-		else if (state == GLUT_UP){
-			right_down = false;
-		}
-		break;
-	default:
-		break;
 	}
-
 	glutPostRedisplay();
 }
 
 void mouse_move(int x, int y){
-	if (left_down == true){
-		fi = old_fi + (left_mouse_down_x - x) / 200.0f;
-		xi = old_xi + (y - left_mouse_down_y) / 200.0f;
-		cout << "fi " << fi << endl;
-		cout << "xi " << xi << endl;
-		glutPostRedisplay();
-	}
-
-	if (right_down == true){
-		if (old_vzd + (right_mouse_down_y - y) / 10.0f > 6.5f){
-			vzd = old_vzd + (right_mouse_down_y - y) / 10.0f;
+	if (!menu){
+		if (left_down == true){
+			fi = old_fi + (left_mouse_down_x - x) / 200.0f;
+			xi = old_xi + (y - left_mouse_down_y) / 200.0f;
+			cout << "fi " << fi << endl;
+			cout << "xi " << xi << endl;
 			glutPostRedisplay();
 		}
-		cout << "vzd" << vzd << endl;
-	}
 
+		if (right_down == true){
+			if (old_vzd + (right_mouse_down_y - y) / 10.0f > 6.5f){
+				vzd = old_vzd + (right_mouse_down_y - y) / 10.0f;
+				glutPostRedisplay();
+			}
+			cout << "vzd" << vzd << endl;
+		}
+	}
 }
 
 void timer(int a){
-	//cout << sn->getWall() << endl;
 	sun_rotation += 0.5f;
 	sn->posun();
 	glutPostRedisplay();
@@ -382,6 +426,24 @@ void timer(int a){
 
 void keyboard(unsigned char key, int x, int y){
 	switch (key){
+	case 13:
+		if (menu){
+			switch (selected_menu)
+			{
+			case 0:
+				menu = false;
+				glutTimerFunc(10, timer, 0);
+				break;
+			case 1:
+				break;
+			case 2:
+				exit(0);
+				break;
+			default:
+				break;
+			}
+		}
+		break;
 	case 27:
 		exit(0);
 		break;
@@ -393,8 +455,28 @@ void keyboard(unsigned char key, int x, int y){
 }
 
 void special_keys(int a_keys, int x, int y){
-	//sn->addSphere();
-	sn->setDirection(a_keys);
+	if (menu){
+		switch (a_keys)
+		{
+		case GLUT_KEY_UP:
+			if (selected_menu - 1 < 0){
+				selected_menu = 2;
+			}
+			else{
+				selected_menu = (selected_menu - 1) % 3;
+			}
+			break;
+		case GLUT_KEY_DOWN:
+			selected_menu = (selected_menu + 1) % 3;
+			break;
+		default:
+			break;
+		}
+	}
+	else{
+		sn->setDirection(a_keys);
+	}
+	glutPostRedisplay();
 }
 
 
@@ -403,7 +485,7 @@ int main(int argc, char** argv){
 	// GLUT Inicializacia
 	glutInit(&argc, argv);
 	// Display Mod (Rgb a Double Buffering)
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH | GLUT_STENCIL);
+	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH | GLUT_STENCIL | GLUT_MULTISAMPLE);
 	//glutInitDisplayString("stencil>=8 rgb>=8 double depth>=24");
 	// Nastavime pociatocnu poziciu a velkost okna
 	glutInitWindowPosition(50, 50);
@@ -420,7 +502,7 @@ int main(int argc, char** argv){
 	glutMotionFunc(mouse_move);
 	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(special_keys);
-	glutTimerFunc(10, timer, 0);
+	//glutTimerFunc(10, timer, 0);
 	ObjectLoader loader = ObjectLoader();
 	sky = new skybox();
 	wor = new world();
@@ -445,6 +527,7 @@ int main(int argc, char** argv){
 
 	textureLoader* tl = new textureLoader();
 	tex_point_sprite = tl->LoadTexture("textures/particle.png");
+	initParticles();
 	glutDisplayFunc(render);
 	glutReshapeFunc(reshape);
 
