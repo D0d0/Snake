@@ -45,6 +45,7 @@ class snake
 	Body secondRotation;
 	void nullSecondrotation();
 	void calculateRotations();
+	GLfloat cas;
 public:
 	vec4* body;
 	GLfloat posunX = 2.1f;
@@ -57,6 +58,8 @@ public:
 	void addSphere();
 	void calculatePoints();
 	void setDirection(GLint dir);
+	void getBoundingBox(Sphere* gula1, Sphere* gula2, float* m1, float* m2);
+	void papam();
 	GLint getWall(){ return wall; }
 	GLfloat getPosunX(){ return posunX; }
 	GLfloat getPosunY(){ return posunY; }

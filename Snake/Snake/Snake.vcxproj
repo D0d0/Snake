@@ -147,6 +147,7 @@
     <ClInclude Include="glew.h" />
     <ClInclude Include="glut-3.7.6-bin\glut.h" />
     <ClInclude Include="il.h" />
+    <ClInclude Include="Level.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="ObjectLoader.h" />
@@ -160,6 +161,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="fonts.cpp" />
+    <ClCompile Include="Level.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="ObjectLoader.cpp" />

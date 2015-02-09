@@ -312,125 +312,142 @@ void snake::setWall(GLint w){
 }
 
 void snake::posun(){
+	GLfloat pos = cas > 0 ? 0.01f : 0.005f;
 	switch (getWall()){
 	case 0:
 		if (righ){
-			posunY += 0.005f;
+			posunY += pos;
 		}
 		if (lef){
-			posunY -= 0.005f;
+			posunY -= pos;
 		}
 		if (up){
-			posunZ += 0.005f;
+			posunZ += pos;
 		}
 		if (down){
-			posunZ -= 0.005f;
+			posunZ -= pos;
 		}
 		if (posunZ >= 2.1f){
 			setWall(1);
+			posunZ = 2.1f;
 		}
 		if (posunZ <= -2.1f){
 			setWall(3);
+			posunZ = -2.1f;
 			down = false;
 			up = true;
 		}
 		if (posunY >= 2.1f){
 			setWall(4);
+			posunY = 2.1f;
 		}
 		if (posunY <= -2.1f){
 			setWall(5);
+			posunY = -2.1f;
 		}
 		break;
 	case 1:
 		if (righ){
-			posunY += 0.005f;
+			posunY += pos;
 		}
 		if (lef){
-			posunY -= 0.005f;
+			posunY -= pos;
 		}
 		if (up){
-			posunX -= 0.005f;
+			posunX -= pos;
 		}
 		if (down){
-			posunX += 0.005f;
+			posunX += pos;
 		}
 		if (posunX <= -2.1f){
 			setWall(2);
+			posunX = -2.1f;
 			up = false;
 			down = true;
 		}
 		if (posunX >= 2.1f){
 			setWall(0);
+			posunX = 2.1f;
 		}
 		if (posunY >= 2.1f){
 			setWall(4);
+			posunY = 2.1f;
 			righ = false;
 			down = true;
 		}
 		if (posunY <= -2.1f){
 			setWall(5);
+			posunY = -2.1f;
 			lef = false;
 			down = true;
 		}
 		break;
 	case 2:
 		if (righ){
-			posunY -= 0.005f;
+			posunY -= pos;
 		}
 		if (lef){
-			posunY += 0.005f;
+			posunY += pos;
 		}
 		if (up){
-			posunZ += 0.005f;
+			posunZ += pos;
 		}
 		if (down){
-			posunZ -= 0.005f;
+			posunZ -= pos;
 		}
 		if (posunZ <= -2.1f){
 			setWall(3);
+			posunZ = -2.1f;
 		}
 		if (posunZ >= 2.1f){
 			setWall(1);
+			posunZ = 2.1f;
 			up = false;
 			down = true;
 		}
 		if (posunY <= -2.1f){
 			setWall(5);
+			posunY = -2.1f;
 		}
 		if (posunY >= 2.1f){
 			setWall(4);
+			posunY = 2.1f;
 		}
 		break;
 	case 3:
 		if (righ){
-			posunY += 0.005f;
+			posunY += pos;
 		}
 		if (lef){
-			posunY -= 0.005f;
+			posunY -= pos;
 		}
 		if (up){
-			posunX -= 0.005f;
+			posunX -= pos;
 		}
 		if (down){
-			posunX += 0.005f;
+			posunX += pos;
 		}
 		if (posunX >= 2.1f){
 			setWall(0);
+			posunX = 2.1f;
 			up = true;
 			down = false;
 		}
 		if (posunX <= -2.1f){
 			setWall(2);
+			posunX = -2.1f;
 		}
 
 		/////
 		if (posunY <= -2.1f){
 			setWall(5);
+			posunY = -2.1f;
 			lef = false;
 			up = true;
 		}
 		if (posunY >= 2.1f){
 			setWall(4);
+			posunY = 2.1f;
 			righ = false;
 			down = true;
 		}
@@ -439,79 +456,100 @@ void snake::posun(){
 		break;
 	case 4:
 		if (righ){
-			posunX -= 0.005f;
+			posunX -= pos;
 		}
 		if (lef){
-			posunX += 0.005f;
+			posunX += pos;
 		}
 		if (up){
-			posunZ += 0.005f;
+			posunZ += pos;
 		}
 		if (down){
-			posunZ -= 0.005f;
+			posunZ -= pos;
 		}
 		if (posunZ >= 2.1f){
 			setWall(1);
+			posunZ = 2.1f;
 			up = false;
 			lef = true;
 		}
 		if (posunZ <= -2.1f){
 			setWall(1);
+			posunZ = -2.1f;
 			down = false;
 			lef = true;
 		}
 		if (posunX >= 2.1f){
 			setWall(0);
+			posunX = 2.1f;
 		}
 		if (posunX <= -2.1f){
 			setWall(2);
+			posunX = -2.1f;
 		}
 		break;
 	case 5:
 		if (righ){
-			posunX += 0.005f;
+			posunX += pos;
 		}
 		if (lef){
-			posunX -= 0.005f;
+			posunX -= pos;
 		}
 		if (up){
-			posunZ += 0.005f;
+			posunZ += pos;
 		}
 		if (down){
-			posunZ -= 0.005f;
+			posunZ -= pos;
 		}
 		if (posunZ >= 2.1f){
 			setWall(1);
+			posunZ = 2.1f;
 			up = false;
 			righ = true;
 		}
 		if (posunZ <= -2.1f){
 			setWall(3);
+			posunZ = -2.1f;
 			down = false;
 			righ = true;
 		}
 		if (posunX >= 2.1f){
 			setWall(0);
+			posunX = 2.1f;
 		}
 		if (posunX <= -2.1f){
 			setWall(2);
+			posunX = -2.1f;
 		}
 		break;
 	default:
 		break;
 	}
 	if (telo.size() > 0){
-		size += 0.005;
+		if (cas > 0){
+			size += 0.01f;
+			cas -= 0.01f;
+		}
+		else{
+			size += 0.005f;
+		}
 		Body* last = &(telo.back());
-		if (last->size < 0){
+		if (last->size < 0.0f){
 			telo.pop_back();
 			chvost = gule.back();
 			gule.pop_back();
 		}
 		else{
-			last->size -= 0.005f;
+			if (cas <= 0.0f){
+				cas = 0.0f;
+				last->size -= 0.005f;
+			}
 		}
 	}
+}
+
+void snake::papam(){
+	cas += 1.0f;
 }
 
 
@@ -545,16 +583,139 @@ void snake::calculatePoints(){
 	body[7] = modelViewMatrix*make_vec4(g);
 }
 
+void snake::getBoundingBox(Sphere* gula1, Sphere* gula2, float* m1, float* m2){
+	glm::mat4 mat1 = glm::make_mat4(m1);
+	glm::mat4 mat2 = glm::make_mat4(m2);
+
+	vec4* s1_body = new vec4[8];
+
+	float bod[4] = { gula1->minX, gula1->minY, gula1->minZ, 1 };
+	s1_body[0] = mat1*make_vec4(bod);
+
+	float bo[4] = { gula1->maxX, gula1->minY, gula1->minZ, 1 };
+	s1_body[1] = mat1*make_vec4(bo);
+
+	float b[4] = { gula1->minX, gula1->maxY, gula1->minZ, 1 };
+	s1_body[2] = mat1*make_vec4(b);
+
+	float c[4] = { gula1->minX, gula1->minY, gula1->maxZ, 1 };
+	s1_body[3] = mat1*make_vec4(c);
+
+	float d[4] = { gula1->maxX, gula1->maxY, gula1->minZ, 1 };
+	s1_body[4] = mat1*make_vec4(d);
+
+	float e[4] = { gula1->maxX, gula1->minY, gula1->maxZ, 1 };
+	s1_body[5] = mat1*make_vec4(e);
+
+	float f[4] = { gula1->minX, gula1->maxY, gula1->maxZ, 1 };
+	s1_body[6] = mat1*make_vec4(f);
+
+	float g[4] = { gula1->maxX, gula1->maxY, gula1->maxZ, 1 };
+	s1_body[7] = mat1*make_vec4(g);
+
+
+	vec4* s2_body = new vec4[8];
+
+	float bod1[4] = { gula2->minX, gula2->minY, gula2->minZ, 1 };
+	s2_body[0] = mat1*make_vec4(bod1);
+
+	float bo1[4] = { gula2->maxX, gula2->minY, gula2->minZ, 1 };
+	s2_body[1] = mat1*make_vec4(bo1);
+
+	float b1[4] = { gula2->minX, gula2->maxY, gula2->minZ, 1 };
+	s2_body[2] = mat1*make_vec4(b1);
+
+	float c1[4] = { gula2->minX, gula2->minY, gula2->maxZ, 1 };
+	s2_body[3] = mat1*make_vec4(c1);
+
+	float d1[4] = { gula2->maxX, gula2->maxY, gula2->minZ, 1 };
+	s2_body[4] = mat1*make_vec4(d1);
+
+	float e1[4] = { gula2->maxX, gula2->minY, gula2->maxZ, 1 };
+	s2_body[5] = mat1*make_vec4(e1);
+
+	float f1[4] = { gula2->minX, gula2->maxY, gula2->maxZ, 1 };
+	s2_body[6] = mat1*make_vec4(f1);
+
+	float g1[4] = { gula2->maxX, gula2->maxY, gula2->maxZ, 1 };
+	s2_body[7] = mat1*make_vec4(g1);
+
+	float minX_s = INT_MAX;
+	float minY_s = INT_MAX;
+	float minZ_s = INT_MAX; 
+	
+	float maxX_s = INT_MIN;
+	float maxY_s = INT_MIN;
+	float maxZ_s = INT_MIN;
+
+	for (int i = 0; i < 8; i++){
+		if (s1_body[i].x < minX_s){
+			minX_s = s1_body[i].x;
+		}
+		if (s1_body[i].x  > maxX_s){
+			maxX_s = s1_body[i].x;
+		}
+
+		if (s1_body[i].y < minY_s){
+			minY_s = s1_body[i].y;
+		}
+		if (s1_body[i].y > maxY_s){
+			maxY_s = s1_body[i].y;
+		}
+
+		if (s1_body[i].z < minZ_s){
+			minZ_s = s1_body[i].z;
+		}
+		if (s1_body[i].z > maxZ_s){
+			maxZ_s = s1_body[i].z;
+		}
+
+
+
+		if (s2_body[i].x < minX_s){
+			minX_s = s2_body[i].x;
+		}
+		if (s2_body[i].x  > maxX_s){
+			maxX_s = s2_body[i].x;
+		}
+
+		if (s2_body[i].y < minY_s){
+			minY_s = s2_body[i].y;
+		}
+		if (s2_body[i].y > maxY_s){
+			maxY_s = s2_body[i].y;
+		}
+
+		if (s2_body[i].z < minZ_s){
+			minZ_s = s2_body[i].z;
+		}
+		if (s2_body[i].z > maxZ_s){
+			maxZ_s = s2_body[i].z;
+		}
+	}
+
+
+	for (int i = 0; i < 8; i++){
+		if ((minX_s <= body[i].x && body[i].x <= maxX_s &&
+			minY_s <= body[i].y && body[i].y <= maxY_s &&
+			minZ_s <= body[i].z && body[i].z <= maxZ_s)){
+			cout <<
+				(minX_s <= body[i].x && body[i].x <= maxX_s &&
+				minY_s <= body[i].y && body[i].y <= maxY_s &&
+				minZ_s <= body[i].z && body[i].z <= maxZ_s) << endl;
+		}
+	}
+
+}
+
 void snake::render(bool render){
 	if (render){
-		calculateRotations();
 		glPushMatrix();
 		glTranslatef(getPosunX(), getPosunY(), getPosunZ());
 		glRotatef(rotation_angle, rotation->getX(), rotation->getY(), rotation->getZ());
 		glRotatef(secondRotation.second_rotation_angle, secondRotation.second_rotation->getX(), secondRotation.second_rotation->getY(), secondRotation.second_rotation->getZ());
 		gluCylinder(quadratic, 0.1f, 0.1f, size, 32, 32);
 		glScalef(0.1, 0.1, 0.1);
-		calculatePoints();
 		hlava->render();
 		hlava->renderBoundingBox();
 		glPopMatrix();
@@ -765,6 +926,9 @@ void snake::render(bool render){
 		glPopMatrix();
 	}
 	else{
+		float* m1 = new float[16];
+		float* m2 = new float[16];
+		Sphere* s1 = nullptr;
 		calculateRotations();
 		glPushMatrix();
 		glTranslatef(getPosunX(), getPosunY(), getPosunZ());
@@ -773,6 +937,22 @@ void snake::render(bool render){
 		glScalef(0.1, 0.1, 0.1);
 		calculatePoints();
 		glPopMatrix();
+
+		int i = 0;
+		for each (Sphere* var in gule){
+			if (i > 1){
+				getBoundingBox(s1, s1, m1, m2);
+			}
+			m1 = m2;
+			m2 = new float[16];
+			s1 = var;
+			glPushMatrix();
+			glTranslatef(var->posunX, var->posunY, var->posunZ);
+			glScalef(0.1, 0.1, 0.1);
+			glGetFloatv(GL_MODELVIEW_MATRIX, m2);
+			glPopMatrix();
+			i++;
+		}
 	}
 }
 

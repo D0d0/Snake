@@ -18,14 +18,13 @@
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"           
 #include "assimp/postprocess.h"
-#include "Model.h"
-#include "ObjectLoader.h"
 #include "Sphere.h"
 #include "snake.h"
 #include <vector>
 #include "glm\glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtx/string_cast.hpp"
+#include "Level.h"
 
 using namespace Assimp;
 using namespace std;
@@ -35,18 +34,16 @@ GLint uroven = 10;
 GLint selected_menu = 0;
 GLint selected_menu_nastavenia = 0;
 GLuint g_window_height, g_window_width;
-GLfloat rotation = 0.0f;
 GLdouble vzd, old_vzd, fi, xi, old_fi, old_xi;
 GLint left_mouse_down_x, left_mouse_down_y;
 GLint right_mouse_down_y;
 GLboolean right_down = false, left_down = false, menu = true, nastavenia = false;
 skybox* sky;
 world* wor;
-Model obj;
 snake* sn;
 GLboolean isWired = false;
-Model wall;
 Sphere* slnko;
+Level* lvl;
 
 // casticovy system
 #define NUM_PARTICLES 1000
@@ -195,13 +192,13 @@ void render(){
 			string uroven_string = "";
 			switch (uroven)
 			{
-			case 5:
+			case 15:
 				uroven_string = "< Easy >";
 				break;
 			case 10:
 				uroven_string = "< Medium >";
 				break;
-			case 15:
+			case 5:
 				uroven_string = "< Hard >";
 				break;
 			default:
@@ -253,21 +250,22 @@ void render(){
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 
-		glPushMatrix();
-		glScalef(0.4, 0.4, 0.4);
-		glTranslatef(-4.3, 4.3, 5.5);
+		//glPushMatrix();
+		//glScalef(0.4, 0.4, 0.4);
+		/*glTranslatef(-4.3, 4.3, 5.5);
 		glRotatef(90, 0, 0, 1);
 		glRotatef(rotation, 0, 1, 0);
-		obj.render(false);
+		//obj.render(false);
 		glRotatef(-rotation, 0, 1, 0);
 		glRotatef(-90, 0, 0, 1);
-		glTranslatef(4.3, -4.3, -5.5);
-		for (int i = 0; i < 8; i++){
+		glTranslatef(4.3, -4.3, -5.5);*/
+		/*for (int i = 0; i < 8; i++){
 			if (obj.getCollision(sn->body[i].x, sn->body[i].y, sn->body[i].z)){
 				cout << obj.getCollision(sn->body[i].x, sn->body[i].y, sn->body[i].z);
 			}
-		}
-		glPopMatrix();
+		}*/
+		lvl->render(false);
+		//glPopMatrix();
 
 
 		glMatrixMode(GL_MODELVIEW);
@@ -303,7 +301,7 @@ void render(){
 		glPushMatrix();
 		glEnable(GL_LIGHT0);
 		glUseProgram(shaders_perpixel_phong);
-		GLfloat sun_position[] = { 10.0f, 10.0f, 10.0f, 1.0f };
+		GLfloat sun_position[] = { 10.0f, 10.0f, 10.0f, 0.0f };
 		glLightfv(GL_LIGHT0, GL_POSITION, sun_position);
 
 		glUseProgram(shaders_pervertex_phong);
@@ -320,17 +318,19 @@ void render(){
 		glDisable(GL_LIGHT0);
 		glEnable(GL_TEXTURE_2D);
 		//renderParticles();
-		glPushMatrix();
-		glScalef(0.4, 0.4, 0.4);
+		//glPushMatrix();
+
+		lvl->render(true);
+		/*glScalef(0.4, 0.4, 0.4);
 		glTranslatef(-4.3, 4.3, 5.5);
 		glRotatef(90, 0, 0, 1);
 		glRotatef(rotation, 0, 1, 0);
-		obj.render(true);
-		obj.renderBoundingBox();
+		//obj.render(true);
+		//obj.renderBoundingBox();
 		glRotatef(-rotation, 0, 1, 0);
 		glRotatef(-90, 0, 0, 1);
-		glTranslatef(4.3, -4.3, -5.5);
-		glPopMatrix();
+		glTranslatef(4.3, -4.3, -5.5);*/
+		//glPopMatrix();
 	}
 	glutSwapBuffers();
 }
@@ -469,9 +469,8 @@ void mouse_move(int x, int y){
 }
 
 void timer(int a){
-	
-rotation += 0.5f;
 	sn->posun();
+	lvl->rotate();
 	glutPostRedisplay();
 	glutTimerFunc(uroven, timer, a);
 	updateParticles();
@@ -491,6 +490,7 @@ void keyboard(unsigned char key, int x, int y){
 				{
 				case 0:
 					menu = false;
+					lvl->init(uroven, sn);
 					glutTimerFunc(uroven, timer, 0);
 					break;
 				case 1:
@@ -622,17 +622,9 @@ int main(int argc, char** argv){
 	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(special_keys);
 	//glutTimerFunc(10, timer, 0);
-	ObjectLoader loader = ObjectLoader();
 	sky = new skybox();
 	wor = new world();
-	//loader.loadModel("Hulk/Hulk.obj");
-	loader.loadModel("mountain/Mountain Dew Code Red soda can.obj");
-	//loader.loadModel("Apple/app.obj");
-	//loader.loadModel("Ostrich/Ostrich.obj");
-	//loader.loadModel("fox/fox.obj");
-	obj = loader.getModel();
-	loader.loadModel("wall/grade.obj");
-	wall = loader.getModel();
+	lvl = new Level();
 	shaderLoader* sl = new shaderLoader();
 	shaders_envmap = sl->loadProgram("shaders/perpixel_envmap.vert", "shaders/perpixel_envmap.frag");
 
