@@ -49,7 +49,6 @@ world::world()
 	ilBindImage(texIL);
 	// nacitanie textury zo suboru
 	bool result = ilLoadImage("cube.jpg");
-	cout << "textura" << result << endl;
 	// generovanie OpenGL textur
 	glGenTextures(1, &tex_cube);
 	glBindTexture(GL_TEXTURE_2D, tex_cube);

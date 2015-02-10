@@ -24,6 +24,7 @@ snake::snake()
 	secondRotation = Body();
 	nullSecondrotation();
 	body = new vec4[8];
+	narazeny = false;
 }
 
 void snake::nullSecondrotation(){
@@ -715,7 +716,6 @@ void snake::render(bool render){
 		gluCylinder(quadratic, 0.1f, 0.1f, size, 32, 32);
 		glScalef(0.1, 0.1, 0.1);
 		hlava->render();
-		hlava->renderBoundingBox();
 		glPopMatrix();
 
 		for each (Sphere* var in gule){
@@ -928,34 +928,29 @@ void snake::render(bool render){
 		float* m2 = new float[16];
 		Sphere* s1 = nullptr;
 		calculateRotations();
-		//glPushMatrix();
 		glLoadIdentity();
 		glTranslatef(getPosunX(), getPosunY(), getPosunZ());
 		glRotatef(rotation_angle, rotation->getX(), rotation->getY(), rotation->getZ());
 		glRotatef(secondRotation.second_rotation_angle, secondRotation.second_rotation->getX(), secondRotation.second_rotation->getY(), secondRotation.second_rotation->getZ());
 		glScalef(0.1, 0.1, 0.1);
 		calculatePoints();
-		//glPopMatrix();
 
 		int i = 0;
 		for each (Sphere* var in gule){
 			m1 = m2;
 			m2 = new float[16];
 			s1 = var;
-			//glPushMatrix();
 			glLoadIdentity();
 			glTranslatef(var->posunX, var->posunY, var->posunZ);
 			glScalef(0.1, 0.1, 0.1);
 			glGetFloatv(GL_MODELVIEW_MATRIX, m2);
-			//glPopMatrix();
 			i++;
 			if (i > 2){
-				narazilsomdoseba(s1, s1, m1, m2);
+				narazeny = narazeny || narazilsomdoseba(s1, s1, m1, m2);
 			}
 		}
 		m1 = m2;
 		m2 = new float[16];
-		//glPushMatrix();
 		glLoadIdentity();
 		if (telo.size() > 0){
 			Body* last = &(telo.back());
@@ -1143,9 +1138,8 @@ void snake::render(bool render){
 		glScalef(0.1, 0.1, 0.1);
 		glGetFloatv(GL_MODELVIEW_MATRIX, m2);
 		if (i > 2){
-			narazilsomdoseba(s1, s1, m1, m2);
+			narazeny = narazeny || narazilsomdoseba(s1, s1, m1, m2);
 		}
-		//glPopMatrix();
 	}
 }
 

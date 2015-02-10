@@ -1,8 +1,5 @@
 #define _USE_MATH_DEFINES
-#include <windows.h>
 #include <stdio.h>
-#include <math.h>
-#include <cmath>
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -25,11 +22,16 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtx/string_cast.hpp"
 #include "Level.h"
+#include <string>
 
 using namespace Assimp;
 using namespace std;
 
+int timer_id = 0;
+bool paused = false;
+bool koniec = false;
 GLuint shaders_envmap, shaders_perpixel_phong, shaders_pervertex_phong, tex_point_sprite;
+GLboolean fog_enabled = false;
 GLint uroven = 10;
 GLint selected_menu = 0;
 GLint selected_menu_nastavenia = 0;
@@ -44,19 +46,8 @@ snake* sn;
 GLboolean isWired = false;
 Sphere* slnko;
 Level* lvl;
-
-// casticovy system
-#define NUM_PARTICLES 1000
-struct Particle
-{
-	float position[3];
-	float velocity[3];
-	float color[4];
-	float life;
-};
-Particle g_particle_system[NUM_PARTICLES];
-
 ofstream logFile;
+
 void reshape(int w, int h){
 	g_window_width = w;
 	g_window_height = h;
@@ -74,98 +65,6 @@ void reshape(int w, int h){
 	gluPerspective(60, ratio, 0.1, 1000.0);
 }
 
-float getRandomMinMax(float fMin, float fMax)
-{
-	float fRandNum = (float)rand() / RAND_MAX;
-	return fMin + (fMax - fMin) * fRandNum;
-}
-
-void getRandomVector(float* vector)
-{
-	vector[2] = getRandomMinMax(0.4f, 1.0f);
-	float radius = (float)sqrt(1 - vector[2] * vector[2]);
-	float t = getRandomMinMax(-M_PI, M_PI);
-	vector[0] = (float)cosf(t) * radius;
-	vector[1] = (float)sinf(t) * radius;
-}
-
-void initParticles()
-{
-	for (int i = 0; i < NUM_PARTICLES; i++)
-	{
-		g_particle_system[i].position[0] = 0;
-		g_particle_system[i].position[1] = 0;
-		g_particle_system[i].position[2] = 0;
-		getRandomVector(g_particle_system[i].velocity);
-		g_particle_system[i].color[0] = getRandomMinMax(0.0f, 1.0f);
-		g_particle_system[i].color[1] = getRandomMinMax(0.0f, 1.0f);
-		g_particle_system[i].color[2] = getRandomMinMax(0.0f, 1.0f);
-		g_particle_system[i].color[3] = getRandomMinMax(0.0f, 0.4f);
-		g_particle_system[i].life = getRandomMinMax(1.0f, 3.0f);
-	}
-}
-
-void updateParticles()
-{
-	static double dLastFrameTime = timeGetTime();
-	double dCurrenFrameTime = timeGetTime();
-	double dElpasedFrameTime = (float)((dCurrenFrameTime - dLastFrameTime) * 0.001);
-	dLastFrameTime = dCurrenFrameTime;
-	for (int i = 0; i < NUM_PARTICLES; i++)
-	{
-		g_particle_system[i].position[0] += (float)dElpasedFrameTime * g_particle_system[i].velocity[0];
-		g_particle_system[i].position[1] += (float)dElpasedFrameTime * g_particle_system[i].velocity[1];
-		g_particle_system[i].position[2] += (float)dElpasedFrameTime * g_particle_system[i].velocity[2];
-		g_particle_system[i].life -= dElpasedFrameTime;
-		if (g_particle_system[i].life < 0 || g_particle_system[i].position[2] < 0)
-		{
-			g_particle_system[i].position[0] = 0;
-			g_particle_system[i].position[1] = 0;
-			g_particle_system[i].position[2] = 0;
-			getRandomVector(g_particle_system[i].velocity);
-			g_particle_system[i].color[0] = getRandomMinMax(0.0f, 1.0f);
-			g_particle_system[i].color[1] = getRandomMinMax(0.0f, 1.0f);
-			g_particle_system[i].color[2] = getRandomMinMax(0.0f, 1.0f);
-			g_particle_system[i].color[3] = getRandomMinMax(0.0f, 0.4f);
-			g_particle_system[i].life = getRandomMinMax(1.0f, 3.0f);
-		}
-	}
-}
-
-
-void renderParticles()
-{
-	glPushMatrix();
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glDepthMask(GL_FALSE);
-	glTranslatef(3, 0, 0);
-	glScalef(0.5, 0.5, 0.5);
-
-	float quadratic[] = { 1.0f, 0.0f, 0.01f };
-	glPointParameterfvARB(GL_POINT_DISTANCE_ATTENUATION_ARB, quadratic);
-	glPointSize(50);
-	glPointParameterfARB(GL_POINT_FADE_THRESHOLD_SIZE_ARB, 60.0f);
-	glPointParameterfARB(GL_POINT_SIZE_MIN_ARB, 1.0f);
-	glPointParameterfARB(GL_POINT_SIZE_MAX_ARB, 50.0f);
-
-	glBindTexture(GL_TEXTURE_2D, tex_point_sprite);
-	glTexEnvf(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
-	glEnable(GL_POINT_SPRITE_ARB);
-	glEnable(GL_TEXTURE_2D);
-	glBegin(GL_POINTS);
-	for (int i = 0; i < NUM_PARTICLES; i++)
-	{
-		glColor4fv(g_particle_system[i].color);
-		glVertex3fv(g_particle_system[i].position);
-	}
-	glEnd();
-	glDisable(GL_POINT_SPRITE_ARB);
-
-	glDepthMask(GL_TRUE);
-	glDisable(GL_BLEND);
-	glPopMatrix();
-}
 
 void render(){
 	// Vymaz (vypln) obrazovku a z-buffer definovanymi hodnotami
@@ -211,7 +110,7 @@ void render(){
 			else{
 				glColor3f(1.0f, 1.0f, 0.0f);
 			}
-			render2DTextWGL((g_window_width - 110) / 2, g_window_height - 230, "Back", -24);
+			render2DTextWGL((g_window_width - 50) / 2, g_window_height - 230, "Back", -24);
 		}
 		else{
 			if (selected_menu == 0){
@@ -227,14 +126,14 @@ void render(){
 			else{
 				glColor3f(1.0f, 1.0f, 0.0f);
 			}
-			render2DTextWGL((g_window_width - 110) / 2, g_window_height - 230, "Options", -24);
+			render2DTextWGL((g_window_width -80) / 2, g_window_height - 230, "Options", -24);
 			if (selected_menu == 2){
 				glColor3f(1.0f, 0.0f, 0.0f);
 			}
 			else{
 				glColor3f(1.0f, 1.0f, 0.0f);
 			}
-			render2DTextWGL((g_window_width - 110) / 2, g_window_height - 260, "Quit", -24);
+			render2DTextWGL((g_window_width - 50) / 2, g_window_height - 260, "Quit", -24);
 		}
 		glDisable(GL_LIGHTING);
 	}
@@ -250,23 +149,7 @@ void render(){
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 
-		//glPushMatrix();
-		//glScalef(0.4, 0.4, 0.4);
-		/*glTranslatef(-4.3, 4.3, 5.5);
-		glRotatef(90, 0, 0, 1);
-		glRotatef(rotation, 0, 1, 0);
-		//obj.render(false);
-		glRotatef(-rotation, 0, 1, 0);
-		glRotatef(-90, 0, 0, 1);
-		glTranslatef(4.3, -4.3, -5.5);*/
-		/*for (int i = 0; i < 8; i++){
-			if (obj.getCollision(sn->body[i].x, sn->body[i].y, sn->body[i].z)){
-				cout << obj.getCollision(sn->body[i].x, sn->body[i].y, sn->body[i].z);
-			}
-		}*/
 		lvl->render(false);
-		//glPopMatrix();
-
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
@@ -283,17 +166,15 @@ void render(){
 		sl->SetShaderUniformMatrix4f(shaders_envmap, "view_matrix", view_matrix);
 
 		// vykresli suradnicove osi svetoveho systemu roznymi farbami
-		glLineWidth(1);
+		/*glLineWidth(1);
 		glBegin(GL_LINES);
 		glColor3f(1.0f, 0.0f, 0.0f); glVertex3f(0.0f, 0.0f, 0.0f); glVertex3f(100.0f, 0.0f, 0.0f);
 		glColor3f(0.0f, 1.0f, 0.0f); glVertex3f(0.0f, 0.0f, 0.0f); glVertex3f(0.0f, 100.0f, 0.0f);
 		glColor3f(0.0f, 0.0f, 1.0f); glVertex3f(0.0f, 0.0f, 0.0f); glVertex3f(0.0f, 0.0f, 100.0f);
-		glEnd();
+		glEnd();*/
 		// vykresli skybox
 		// skybox je dany vo svetovych suradniciach, akurat jeho stred je stale v bode, kdeje kamera
 		sky->render();
-
-		render2DTextFT(10, 45, "F1 - zapni/vypni animaciu");
 		render3DTextGLUT(1.9, 0, 0, 0.004, GLUT_STROKE_ROMAN, "EASTER EGG");
 
 		wor->render();
@@ -317,20 +198,18 @@ void render(){
 
 		glDisable(GL_LIGHT0);
 		glEnable(GL_TEXTURE_2D);
-		//renderParticles();
-		//glPushMatrix();
-
 		lvl->render(true);
-		/*glScalef(0.4, 0.4, 0.4);
-		glTranslatef(-4.3, 4.3, 5.5);
-		glRotatef(90, 0, 0, 1);
-		glRotatef(rotation, 0, 1, 0);
-		//obj.render(true);
-		//obj.renderBoundingBox();
-		glRotatef(-rotation, 0, 1, 0);
-		glRotatef(-90, 0, 0, 1);
-		glTranslatef(4.3, -4.3, -5.5);*/
-		//glPopMatrix();
+		koniec = lvl->koniec();
+		glColor3f(1, 0, 0);
+		if (koniec){
+			timer_id++;
+			render2DTextWGL((g_window_width-300) / 2, (g_window_height - 30) / 2, "GAME OVER!", -50);
+			render2DTextWGL((g_window_width-150) / 2, (g_window_height - 100) / 2, ("Points: " + std::to_string(lvl->points)).c_str(), -35);
+		}
+		else{
+			render2DTextWGL(g_window_width - 150, g_window_height - 30, ("Points: " + std::to_string(lvl->points)).c_str(), -24);
+		}
+		glColor3f(0, 0, 1);
 	}
 	glutSwapBuffers();
 }
@@ -409,7 +288,6 @@ bool init(void)
 	glHint(GL_FOG_HINT, GL_DONT_CARE);
 	glFogf(GL_FOG_START, 3.0f);
 	glFogf(GL_FOG_END, 20.0f);
-	//glEnable(GL_FOG);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	return true;
 }
@@ -469,11 +347,12 @@ void mouse_move(int x, int y){
 }
 
 void timer(int a){
-	sn->posun();
-	lvl->rotate();
-	glutPostRedisplay();
-	glutTimerFunc(uroven, timer, a);
-	updateParticles();
+	if (a + 1 == timer_id && !koniec){
+		sn->posun();
+		lvl->rotate();
+		glutPostRedisplay();
+		glutTimerFunc(uroven, timer, a);
+	}
 }
 
 void keyboard(unsigned char key, int x, int y){
@@ -490,8 +369,10 @@ void keyboard(unsigned char key, int x, int y){
 				{
 				case 0:
 					menu = false;
+					koniec = false;
+					sn = new snake();
 					lvl->init(uroven, sn);
-					glutTimerFunc(uroven, timer, 0);
+					glutTimerFunc(uroven, timer, timer_id++);
 					break;
 				case 1:
 					selected_menu_nastavenia = 0;
@@ -511,11 +392,21 @@ void keyboard(unsigned char key, int x, int y){
 			nastavenia = false;
 		}
 		else{
-			exit(0);
+			menu = true;
 		}
 		break;
 	case 'w':
 		isWired = !isWired;
+		break;
+	case 'f':
+		fog_enabled = !fog_enabled;
+		if (fog_enabled){
+			glEnable(GL_FOG);
+		}
+		else{
+			glDisable(GL_FOG);
+		}
+		break;
 	default:
 		break;
 	}
@@ -616,7 +507,6 @@ int main(int argc, char** argv){
 	glewInit();
 	init();
 	ilInit();
-	sn = new snake();
 	glutMouseFunc(mouse_klik);
 	glutMotionFunc(mouse_move);
 	glutKeyboardFunc(keyboard);
@@ -640,7 +530,6 @@ int main(int argc, char** argv){
 
 	textureLoader* tl = new textureLoader();
 	tex_point_sprite = tl->LoadTexture("textures/particle.png");
-	initParticles();
 	glutDisplayFunc(render);
 	glutReshapeFunc(reshape);
 

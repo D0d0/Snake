@@ -19,6 +19,7 @@
 #include <freetype/fttrigon.h>
 
 #include <math.h>
+#include "Vector3D.h"
 
 // id display listov pre znaky
 GLuint g_2DtextWGL = 0, g_3DtextWGL = 0;
@@ -230,16 +231,17 @@ void render2DTextWGL(float x, float y, const char *string, int size)
 }
 
 // renderovanie 3D textu na danu svetovu poziciu s danou skalou pomocou WGL kniznice
-void render3DTextWGL(float x, float y, float z, float scale, const char *string)
+void render3DTextWGL(Vector3D* trans, Vector3D* rotate, float angle, void *font, const char *string)
 {
 	if (g_3DtextWGL == 0)
 		init3DFontWGL("Arial");
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-	glTranslatef(x, y, z);
+	glTranslatef(trans->getX(), trans->getY(), trans->getZ());
 	glRotatef(-90, 1.f, 0.0f, 0.0f);
-	glScalef(-scale, -scale, scale);
+	glScalef(-0.5, -0.5, 0.5);
+	glRotatef(angle, rotate->getX(), rotate->getY(), rotate->getZ());
 	glPushAttrib(GL_LIST_BIT);
 	glListBase(g_3DtextWGL - 32);
 	glCallLists(strlen(string), GL_UNSIGNED_BYTE, string);

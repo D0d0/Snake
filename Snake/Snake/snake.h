@@ -20,7 +20,6 @@ struct Body{
 	GLboolean down = false;
 	GLboolean righ = false;
 	GLboolean lef = false;
-	
 };
 
 class snake
@@ -47,6 +46,7 @@ class snake
 	void calculateRotations();
 	GLfloat cas;
 public:
+	bool narazeny = false;
 	vec4* body;
 	GLfloat posunX = 2.1f;
 	GLfloat posunY = 0.0f;

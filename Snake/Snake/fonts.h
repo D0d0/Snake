@@ -1,6 +1,6 @@
 // fonts.h
 // FUNKCIE PRE INICIALIZACIU A VYKRESLOVANIE TEXTOV
-
+#include "Vector3D.h"
 // vytvorenie 2D znakov do display listov pomocou WGL
 void init2DFontWGL(const char* font_name, int size);
 
@@ -17,7 +17,7 @@ void render2DTextFT(float x, float y, const char *string);
 void render2DTextWGL(float x, float y, const char *string, int size);
 
 // renderovanie 3D textu na danu svetovu poziciu s danou skalou pomocou WGL kniznice
-void render3DTextWGL(float x, float y, float z, float scale, const char *string);
+void render3DTextWGL(Vector3D* trans, Vector3D* rotate, float angle, void *font, const char *string);
 
 // renderovanie pripraveneho 2D textu na danu oknovu poziciu pomocou WGL kniznice
 void render2DTextGLUT(float x, float y, void *font, const char *string);
