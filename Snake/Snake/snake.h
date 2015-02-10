@@ -58,7 +58,7 @@ public:
 	void addSphere();
 	void calculatePoints();
 	void setDirection(GLint dir);
-	void getBoundingBox(Sphere* gula1, Sphere* gula2, float* m1, float* m2);
+	bool narazilsomdoseba(Sphere* gula1, Sphere* gula2, float* m1, float* m2);
 	void papam();
 	GLint getWall(){ return wall; }
 	GLfloat getPosunX(){ return posunX; }
