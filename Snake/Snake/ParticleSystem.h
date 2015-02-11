@@ -7,7 +7,7 @@
 #include "glew.h"
 #include "glut-3.7.6-bin\glut.h"
 
-#define NUM_PARTICLES 1000
+#define NUM_PARTICLES 200
 
 class ParticleSystem
 {
@@ -39,7 +39,7 @@ public:
 	void updateParticles();
 	void startParticle(){ if (!play){ play = true; } }
 	bool canDelete(){
-		return time < -500;
+		return time < -400;
 	};
 	void setParticle(Vector3D* rot, Vector3D* trans, GLfloat ang){
 		rotation = rot;
@@ -52,6 +52,6 @@ public:
 		font_angle = ang;
 	};
 	void setPoints(int p){ points = p; };
-	void decreaseTime(){ time -= 1; };
+	void decreaseTime(){ time -= 2; };
 	~ParticleSystem();
 };

@@ -47,6 +47,7 @@ GLboolean isWired = false;
 Sphere* slnko;
 Level* lvl;
 ofstream logFile;
+GLfloat old_camera_pos[4];
 
 void reshape(int w, int h){
 	g_window_width = w;
@@ -92,25 +93,25 @@ void render(){
 			switch (uroven)
 			{
 			case 15:
-				uroven_string = "< Easy >";
+				uroven_string = "<    Easy    >";
 				break;
 			case 10:
-				uroven_string = "< Medium >";
+				uroven_string = "<  Medium  >";
 				break;
 			case 5:
-				uroven_string = "< Hard >";
+				uroven_string = "<    Hard    >";
 				break;
 			default:
 				break;
 			}
-			render2DTextWGL((g_window_width - 110) / 2, g_window_height - 200, uroven_string.c_str(), -24);
+			render2DTextWGL((g_window_width - 130) / 2, g_window_height - 200, uroven_string.c_str(), -24);
 			if (selected_menu_nastavenia == 1){
 				glColor3f(1.0f, 0.0f, 0.0f);
 			}
 			else{
 				glColor3f(1.0f, 1.0f, 0.0f);
 			}
-			render2DTextWGL((g_window_width - 50) / 2, g_window_height - 230, "Back", -24);
+			render2DTextWGL((g_window_width - 40) / 2, g_window_height - 230, "Back", -24);
 		}
 		else{
 			if (selected_menu == 0){
@@ -126,7 +127,7 @@ void render(){
 			else{
 				glColor3f(1.0f, 1.0f, 0.0f);
 			}
-			render2DTextWGL((g_window_width -80) / 2, g_window_height - 230, "Options", -24);
+			render2DTextWGL((g_window_width - 80) / 2, g_window_height - 230, "Options", -24);
 			if (selected_menu == 2){
 				glColor3f(1.0f, 0.0f, 0.0f);
 			}
@@ -159,6 +160,16 @@ void render(){
 		camera_pos[1] = vzd*sin(fi)*cos(xi);
 		camera_pos[2] = vzd*sin(xi);
 		camera_pos[3] = 1;
+		/*if (camera_pos[1] > 0 && old_camera_pos[1] < 0 || camera_pos[1] < 0 && old_camera_pos[1] > 0){
+			camera_pos[1] = old_camera_pos[1];
+		}
+		old_camera_pos[0]= camera_pos[0];
+		old_camera_pos[1] = camera_pos[1];
+		old_camera_pos[2] = camera_pos[2];
+		old_camera_pos[3] = camera_pos[3];*/
+		cout << camera_pos[0] << endl;
+		cout << camera_pos[1] << endl;
+		cout << camera_pos[2] << endl;
 		float view_matrix[16];
 
 		gluLookAt(camera_pos[0], camera_pos[1], camera_pos[2], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
@@ -203,8 +214,8 @@ void render(){
 		glColor3f(1, 0, 0);
 		if (koniec){
 			timer_id++;
-			render2DTextWGL((g_window_width-300) / 2, (g_window_height - 30) / 2, "GAME OVER!", -50);
-			render2DTextWGL((g_window_width-150) / 2, (g_window_height - 100) / 2, ("Points: " + std::to_string(lvl->points)).c_str(), -35);
+			render2DTextWGL((g_window_width - 300) / 2, (g_window_height - 30) / 2, "GAME OVER!", -50);
+			render2DTextWGL((g_window_width - 150) / 2, (g_window_height - 100) / 2, ("Points: " + std::to_string(lvl->points)).c_str(), -35);
 		}
 		else{
 			render2DTextWGL(g_window_width - 150, g_window_height - 30, ("Points: " + std::to_string(lvl->points)).c_str(), -24);
@@ -331,8 +342,8 @@ void mouse_move(int x, int y){
 		if (left_down == true){
 			fi = old_fi + (left_mouse_down_x - x) / 200.0f;
 			xi = old_xi + (y - left_mouse_down_y) / 200.0f;
-			cout << "fi " << fi << endl;
-			cout << "xi " << xi << endl;
+			/*cout << "fi " << fi << endl;
+			cout << "xi " << xi << endl;*/
 			glutPostRedisplay();
 		}
 
@@ -341,7 +352,7 @@ void mouse_move(int x, int y){
 				vzd = old_vzd + (right_mouse_down_y - y) / 10.0f;
 				glutPostRedisplay();
 			}
-			cout << "vzd" << vzd << endl;
+			//cout << "vzd" << vzd << endl;
 		}
 	}
 }

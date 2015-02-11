@@ -31,7 +31,7 @@ class snake
 	Sphere* chvost;
 	vector<Sphere*> gule;
 	vector<Body> telo;
-	GLfloat size = 2.0f;
+	GLfloat size = 1.0f;
 	GLUquadricObj *quadratic;
 	GLboolean up = true;
 	GLboolean down = false;

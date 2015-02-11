@@ -532,7 +532,7 @@ void snake::posun(){
 	if (telo.size() > 0){
 		if (cas > 0){
 			size += 0.01f;
-			cas -= 0.01f;
+			cas -= 0.02f;
 		}
 		else{
 			size += 0.005f;

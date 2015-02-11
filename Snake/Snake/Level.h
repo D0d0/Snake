@@ -31,6 +31,16 @@ class Level
 	vector<obejct_info*> modely;
 	snake* sn;
 	bool kon = false;
+	GLint uroven;
+	GLfloat time = 0.0f;
+	obejct_info* hulk;
+	Vector3D* hulk_posun;
+	GLint hulk_stena;
+	GLboolean hulk_dopadol;
+	GLboolean priehladny;
+	void generujHulk();
+	int count;
+	void HulkNext();
 public:
 	int points = 0;
 	Level();
