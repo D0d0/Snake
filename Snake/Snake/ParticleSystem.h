@@ -35,7 +35,7 @@ public:
 	GLboolean play = false;
 	int points;
 	ParticleSystem();
-	void render();
+	void render(bool update);
 	void updateParticles();
 	void startParticle(){ if (!play){ play = true; } }
 	bool canDelete(){

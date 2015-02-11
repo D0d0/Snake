@@ -308,6 +308,7 @@ void Level::init(GLint uroven, snake* sna){
 	{
 	case 5:
 	case 10:
+		count = 10;
 		break;
 	case 15:
 		count = 0;
@@ -479,7 +480,7 @@ void Level::render(GLboolean draw){
 		}
 		for each (obejct_info* var in modely){
 			if (var->par != NULL && var->par->play){
-				var->par->render();
+				var->par->render(!kon);
 			}
 		}
 	}

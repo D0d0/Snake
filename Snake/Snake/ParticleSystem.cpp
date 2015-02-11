@@ -75,12 +75,14 @@ void ParticleSystem::updateParticles()
 }
 
 
-void ParticleSystem::render()
+void ParticleSystem::render(bool update)
 {
 	if (!play){
 		return;
 	}
-	updateParticles();
+	if (update){
+		updateParticles();
+	}
 	glPushMatrix();
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
